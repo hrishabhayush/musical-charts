@@ -2,23 +2,66 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Counter} from "../src/Counter.sol";
+import {AMM} from "../src/Counter.sol";
+import {ERC20} from "solmate/tokens/ERC20.sol";
+
+contract MockERC20 is ERC20 {
+    constructor(string memory name, string memory symbol, uint8 decimals)
+        ERC20(name, symbol, decimals)
+    {}
+
+    function mint(address to, uint256 amount) public {
+        _mint(to, amount);
+    }
+}
 
 contract CounterTest is Test {
-    Counter public counter;
+    AMM public amm;
+    ERC20 public baseAsset;
+    ERC20 public quoteAsset;
 
     function setUp() public {
-        counter = new Counter();
-        counter.setNumber(0);
+        baseAsset = new MockERC20("Base Asset", "BASE", 18);
+        quoteAsset = new MockERC20("Quote Asset", "QUOTE", 18);
+        amm = new AMM(baseAsset, quoteAsset, 1e18, 1e18);
+
+        baseAsset.mint(address(this), 1000 * 1e18);
+        quoteAsset.mint(address(this), 1000 * 1e18);
     }
 
-    function test_Increment() public {
-        counter.increment();
-        assertEq(counter.number(), 1);
+    function test_AddLiquidity() public {
+        baseAsset.approve(address(amm), 100 * 1e18);
+        quoteAsset.approve(address(amm), 100 * 1e18);
+
+        amm.addLiquidity(100 * 1e18, 100 * 1e18);
+
+        assertEq(baseAsset.balanceOf(address(amm)), 100 * 1e18);
+        assertEq(quoteAsset.balanceOf(address(amm)), 100 * 1e18);
     }
 
-    function testFuzz_SetNumber(uint256 x) public {
-        counter.setNumber(x);
-        assertEq(counter.number(), x);
+    function test_Swap() public {
+        baseAsset.approve(address(amm), 100 * 1e18);
+        quoteAsset.approve(address(amm), 100 * 1e18);
+
+        amm.addLiquidity(100 * 1e18, 100 * 1e18);
+
+        uint256 baseIn = 10 * 1e18;
+        uint256 quoteOut = 10 * 1e18;
+
+        (uint256 baseOut, uint256 quoteIn) = amm.swap(baseIn, quoteOut);
+
+        assertEq(baseOut, 0);
+        assertEq(quoteIn, 0);
+    }
+
+    function test_GetPrice() public {
+        baseAsset.approve(address(amm), 100 * 1e18);
+        quoteAsset.approve(address(amm), 100 * 1e18);
+
+        amm.addLiquidity(100 * 1e18, 100 * 1e18);
+
+        uint256 price = amm.getPrice(1e18);
+
+        assertEq(price, 1e18);
     }
 }
