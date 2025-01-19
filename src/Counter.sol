@@ -51,7 +51,7 @@ contract AMM is ReentrancyGuard {
         }
 
         if (quoteOut > 0) {
-            (quoteOut, baseReserve) = _swap(
+            (quoteIn, baseReserve) = _swap(
                 quoteAsset,
                 baseAsset,
                 quoteReserve,

@@ -17,8 +17,8 @@ contract MockERC20 is ERC20 {
 
 contract CounterTest is Test {
     AMM public amm;
-    ERC20 public baseAsset;
-    ERC20 public quoteAsset;
+    MockERC20 public baseAsset;
+    MockERC20 public quoteAsset;
 
     function setUp() public {
         baseAsset = new MockERC20("Base Asset", "BASE", 18);
@@ -50,6 +50,9 @@ contract CounterTest is Test {
 
         (uint256 baseOut, uint256 quoteIn) = amm.swap(baseIn, quoteOut);
 
+        console.log("baseOut:", baseOut);
+        console.log("quoteIn:", quoteIn);
+        
         assertEq(baseOut, 0);
         assertEq(quoteIn, 0);
     }
