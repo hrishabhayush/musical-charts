@@ -6,9 +6,7 @@ import {AMM} from "../src/Counter.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 
 contract MockERC20 is ERC20 {
-    constructor(string memory name, string memory symbol, uint8 decimals)
-        ERC20(name, symbol, decimals)
-    {}
+    constructor(string memory name, string memory symbol, uint8 decimals) ERC20(name, symbol, decimals) {}
 
     function mint(address to, uint256 amount) public {
         _mint(to, amount);
@@ -52,7 +50,7 @@ contract CounterTest is Test {
 
         console.log("baseOut:", baseOut);
         console.log("quoteIn:", quoteIn);
-        
+
         assertEq(baseOut, 0);
         assertEq(quoteIn, 0);
     }

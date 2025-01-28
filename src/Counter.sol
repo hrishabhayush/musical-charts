@@ -15,12 +15,7 @@ contract AMM is ReentrancyGuard {
     uint256 baseReserve;
     uint256 quoteReserve;
 
-    constructor(
-        ERC20 _baseAsset,
-        ERC20 _quoteAsset,
-        uint256 _wad,
-        uint256 _priceReveal
-    ) {
+    constructor(ERC20 _baseAsset, ERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal) {
         baseAsset = _baseAsset;
         quoteAsset = _quoteAsset;
         wad = _wad;
@@ -35,39 +30,20 @@ contract AMM is ReentrancyGuard {
         quoteAsset.transferFrom(msg.sender, address(this), quoteAmount);
     }
 
-    function swap(uint256 baseIn, uint256 quoteOut)
-        external
-        nonReentrant
-        returns (uint256 baseOut, uint256 quoteIn)
-    {
+    function swap(uint256 baseIn, uint256 quoteOut) external nonReentrant returns (uint256 baseOut, uint256 quoteIn) {
         if (baseIn > 0) {
-            (baseOut, quoteReserve) = _swap(
-                baseAsset,
-                quoteAsset,
-                baseReserve,
-                quoteReserve,
-                baseIn
-            );
+            (baseOut, quoteReserve) = _swap(baseAsset, quoteAsset, baseReserve, quoteReserve, baseIn);
         }
 
         if (quoteOut > 0) {
-            (quoteIn, baseReserve) = _swap(
-                quoteAsset,
-                baseAsset,
-                quoteReserve,
-                baseReserve,
-                quoteOut
-            );
+            (quoteIn, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteOut);
         }
     }
 
-    function _swap(
-        ERC20 tokenIn,
-        ERC20 tokenOut,
-        uint256 reserveIn,
-        uint256 reserveOut,
-        uint256 amountIn
-    ) internal returns (uint256 amountOut, uint256 reserveOutNew) {
+    function _swap(ERC20 tokenIn, ERC20 tokenOut, uint256 reserveIn, uint256 reserveOut, uint256 amountIn)
+        internal
+        returns (uint256 amountOut, uint256 reserveOutNew)
+    {
         uint256 numerator = mulDivDown(reserveOut, amountIn, wad);
         uint256 denominator = reserveIn + amountIn;
 
@@ -84,17 +60,9 @@ contract AMM is ReentrancyGuard {
         return mulDivDown(baseReserve, wad, quoteReserve);
     }
 
-    function mulDivDown(
-        uint256 x,
-        uint256 y,
-        uint256 denominator
-    ) internal pure returns (uint256 z) {
-        require(
-            denominator != 0 && (z = x * y / denominator) <= type(uint256).max,
-            "overflow or division by zero"
-        );
+    function mulDivDown(uint256 x, uint256 y, uint256 denominator) internal pure returns (uint256 z) {
+        require(denominator != 0 && (z = x * y / denominator) <= type(uint256).max, "overflow or division by zero");
 
         z = (x * y) / denominator;
     }
 }
-
