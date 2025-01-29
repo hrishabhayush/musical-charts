@@ -1,13 +1,18 @@
-## Foundry
+# Musical Chart Project
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
+The **Musical Chart Project** transforms stock market data into music using an AI-powered violin within a **Trusted Execution Environment (TEE)**. Users can experience market trends through sound without directly accessing the data.
 
-Foundry consists of:
+## Concept
+- **Secure Data Interpretation:** Stock market prices are encrypted and processed in a TEE.
+- **AI-Powered Violin:** Converts encrypted data into musical compositions.
+- **Interactive Experience:** Users can pay to hear trends as music.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Goals
+Focus on engagement and excitement rather than commercial viability, providing a unique, shareable experience.
+
+## Get Involved
+Join us in redefining data engagement through sound!
 
 ## Documentation
 
