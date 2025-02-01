@@ -41,19 +41,24 @@ contract CounterTest is Test {
         baseAsset.approve(address(amm), 100 * 1e18);
         quoteAsset.approve(address(amm), 100 * 1e18);
 
+        amm.addLiquidity(100 * 1e18, 100 * 1e18);
+
         uint256 baseIn = 10 * 1e18;
-        uint256 quoteOut = 5 * 1e18;
+        uint256 quoteOut = 0;
 
         console.log("BEFORE SWAP - baseIn:", baseIn);
         console.log("Before swap - quoteOut:", quoteOut);
 
-        (uint256 baseOut, uint256 quoteIn) = amm.swap(baseIn, quoteOut);
+        (uint256 baseOut, uint256 quoteIn) = amm.swap(baseIn, 0);
+
+        assertEq(baseOut, 1000 / 10 * 1e18);
+        assertEq(quoteIn, 1000 / 10 * 1e18);
 
         console.log("AFTER SWAP - baseOut:", baseOut);
         console.log("AFTER SWAP - quoteIn:", quoteIn);
 
-        assertEq(baseOut, 0);
-        assertEq(quoteIn, 0);
+        // assertEq(baseOut, 0);
+        // assertEq(quoteIn, 0);
     }
 
     function test_GetPrice() public {
