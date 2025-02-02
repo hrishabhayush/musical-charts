@@ -1,5 +1,7 @@
 import { Network, Alchemy } from "alchemy-sdk";
 import dotenv from 'dotenv';
+import { createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
 
 dotenv.config();
 
@@ -11,8 +13,14 @@ const settings = {
     apiKey: process.env.ALCHEMY_API_KEY,
     network: Network.ETH_SEPOLIA  // Using testnet for development
 };
-
 const alchemy = new Alchemy(settings);
+
+const client = createPublicClient({
+    chain: mainnet,
+    transport: http(),
+  });
+  
+const blockNumber = client.getBlockNumber();
 
 interface PriceData {
     timestamp: number;
