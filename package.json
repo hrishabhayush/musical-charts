@@ -1,33 +1,13 @@
 {
-  "dependencies": {
-    "alchemy-sdk": "^3.5.1",
-    "dotenv": "^16.4.7",
-    "solmate": "^6.8.0",
-    "viem": "^2.22.17"
-  },
   "name": "musical-charts",
-  "version": "1.0.0",
-  "description": "## Overview The **Musical Chart Project** transforms stock market data into music using an AI-powered violin within a **Trusted Execution Environment (TEE)**. Users can experience market trends through sound without directly accessing the data.",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib",
-    "test": "test"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hrishabhayush/musical-charts.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hrishabhayush/musical-charts/issues"
-  },
-  "homepage": "https://github.com/hrishabhayush/musical-charts#readme",
+  "module": "src/scripts/alchemy.ts",
+  "type": "module",
   "devDependencies": {
-    "@types/node": "^22.13.0"
+    "bun-types": "latest"
+  },
+  "dependencies": {
+    "dotenv": "latest",
+    "seismic-viem": "^1.0.10",
+    "viem": "latest"
   }
 }

@@ -25,9 +25,17 @@ contract AMMReference is ReentrancyGuard {
     mapping(address => bool) public hasSwapped;
     mapping(address => uint256) public lastSwapTimestamp;
 
+    event ViolinAccess(address user, uint256 timestamp);
+
     modifier onlyViolin() {
         require(hasSwapped[msg.sender], "Only violin can call this function");
         _;
+    }
+
+    function requestViolinAccess() external {
+        hasSwapped[msg.sender] = true;
+        lastSwapTimestamp[msg.sender] = block.timestamp;
+        emit ViolinAccess(msg.sender, block.timestamp);
     }
 
     constructor(SERC20 _baseAsset, SERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal) {
@@ -57,15 +65,12 @@ contract AMMReference is ReentrancyGuard {
      * Wrapper around swap so calldata for trade looks the same regardless of
      * direction.
      */
-    function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant {
+    function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolin {
         suint256 baseOut;
         suint256 quoteOut;
 
         (baseOut, baseReserve, quoteReserve) = _swap(baseAsset, quoteAsset, baseReserve, quoteReserve, baseIn);
         (quoteOut, quoteReserve, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteIn);
-
-        hasSwapped[msg.sender] = true;
-        lastSwapTimestamp[msg.sender] = block.timestamp;
     }
 
     /*

@@ -35,6 +35,15 @@ contract AMMReferenceTest is Test {
         quoteAsset.mint(saddress(SWAPPER1_ADDR), suint256(50000 * WAD));
         baseAsset.mint(saddress(SWAPPER2_ADDR), suint256(50000 * WAD));
         quoteAsset.mint(saddress(SWAPPER2_ADDR), suint256(50000 * WAD));
+
+        // Request violin access for test accounts
+        vm.startPrank(SWAPPER1_ADDR);
+        amm.requestViolinAccess();
+        vm.stopPrank();
+
+        vm.startPrank(SWAPPER2_ADDR);
+        amm.requestViolinAccess();
+        vm.stopPrank();
     }
 
     function test_PriceUp() public {
