@@ -49,7 +49,7 @@ export class PriceDataManager {
             });
 
             return Promise.all(
-                logs.map(async (log) => {
+                logs.map(async (log: any) => {
                     const block = await this.client.getBlock({ blockNumber: log.blockNumber });
                     return {
                         timestamp: Number(block.timestamp),

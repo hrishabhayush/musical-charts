@@ -32,10 +32,16 @@ contract AMMReference is ReentrancyGuard {
         _;
     }
 
+    modifier onlyListener() {
+        require(hasSwapped[msg.sender], "You are not the listener");
+        _;
+    }
+
     function requestViolinAccess() external {
         hasSwapped[msg.sender] = true;
         lastSwapTimestamp[msg.sender] = block.timestamp;
         emit ViolinAccess(msg.sender, block.timestamp);
+        // Off-chain logic: decrypt the data for music generation, but don't reveal 
     }
 
     constructor(SERC20 _baseAsset, SERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal) {
@@ -65,7 +71,9 @@ contract AMMReference is ReentrancyGuard {
      * Wrapper around swap so calldata for trade looks the same regardless of
      * direction.
      */
+     // After listening to the music, the user can call this function to swap the assets
     function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolin {
+        // Price gets revealed here
         suint256 baseOut;
         suint256 quoteOut;
 
@@ -103,7 +111,7 @@ contract AMMReference is ReentrancyGuard {
     /*
      * Bypasses priceReveal threshold. For testing purposes.
      */
-    function getPrice() external view returns (uint256 price) {
+    function getPrice() external view onlyListener returns (uint256 price) {
         return uint256(_computePrice());
     }
 
