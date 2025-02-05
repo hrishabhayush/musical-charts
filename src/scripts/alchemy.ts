@@ -1,6 +1,6 @@
 import { createShieldedPublicClient, seismicDevnet } from 'seismic-viem';
 import { http, parseAbiItem } from 'viem';
-
+import * as mm from '@magenta/music';
 interface PriceData {
     timestamp: number;
     price: string;  // Encrypted price data

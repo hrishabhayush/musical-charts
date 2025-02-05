@@ -16,6 +16,8 @@ contract AMMReference is ReentrancyGuard {
     SERC20 public baseAsset;
     SERC20 public quoteAsset;
 
+    saddress contract_address;
+
     suint256 wad;
     suint256 priceReveal;
 
@@ -25,7 +27,8 @@ contract AMMReference is ReentrancyGuard {
     mapping(address => bool) public hasSwapped;
     mapping(address => uint256) public lastSwapTimestamp;
 
-    event ViolinAccess(address user, uint256 timestamp);
+    event Listening(address indexed user, uint256 timestamp);
+    event SwapExecuted(address indexed user, uint256 timestamp);
 
     modifier onlyViolin() {
         require(hasSwapped[msg.sender], "Only violin can call this function");
@@ -37,11 +40,16 @@ contract AMMReference is ReentrancyGuard {
         _;
     }
 
-    function requestViolinAccess() external {
+    modifier onlyAdmin() {
+        require(saddress(msg.sender) == contract_address, "You are not the admin");
+        _;
+    }
+
+    function listen() external {
         hasSwapped[msg.sender] = true;
         lastSwapTimestamp[msg.sender] = block.timestamp;
-        emit ViolinAccess(msg.sender, block.timestamp);
-        // Off-chain logic: decrypt the data for music generation, but don't reveal 
+        emit Listening(msg.sender, block.timestamp);
+        // Off-chain logic: decrypt the data for music generation, but don't reveal
     }
 
     constructor(SERC20 _baseAsset, SERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal) {
@@ -71,14 +79,20 @@ contract AMMReference is ReentrancyGuard {
      * Wrapper around swap so calldata for trade looks the same regardless of
      * direction.
      */
-     // After listening to the music, the user can call this function to swap the assets
+    // After listening to the music, the user can call this function to swap the assets
     function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolin {
         // Price gets revealed here
+        require(
+            block.timestamp >= lastSwapTimestamp[msg.sender] + 10 seconds, "Must wait 10seconds before calling swap"
+        );
+
         suint256 baseOut;
         suint256 quoteOut;
 
         (baseOut, baseReserve, quoteReserve) = _swap(baseAsset, quoteAsset, baseReserve, quoteReserve, baseIn);
         (quoteOut, quoteReserve, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteIn);
+
+        emit SwapExecuted(msg.sender, block.timestamp);
     }
 
     /*

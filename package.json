@@ -6,8 +6,10 @@
     "bun-types": "latest"
   },
   "dependencies": {
+    "@magenta/music": "^1.23.1",
     "dotenv": "latest",
     "seismic-viem": "^1.0.10",
+    "tone": "^15.0.4",
     "typescript": "^5.7.3",
     "viem": "latest"
   }

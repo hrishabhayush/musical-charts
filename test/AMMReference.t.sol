@@ -38,11 +38,11 @@ contract AMMReferenceTest is Test {
 
         // Request violin access for test accounts
         vm.startPrank(SWAPPER1_ADDR);
-        amm.requestViolinAccess();
+        amm.listen();
         vm.stopPrank();
 
         vm.startPrank(SWAPPER2_ADDR);
-        amm.requestViolinAccess();
+        amm.listen();
         vm.stopPrank();
     }
 
