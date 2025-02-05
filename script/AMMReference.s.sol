@@ -23,7 +23,9 @@ contract CounterScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        amm = new AMMReference(baseAsset, quoteAsset, 1e18, 1e18);
+        address admin = address(0xabcd);
+
+        amm = new AMMReference(baseAsset, quoteAsset, 1e18, 1e18, admin);
 
         vm.stopBroadcast();
     }

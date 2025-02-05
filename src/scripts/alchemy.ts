@@ -80,6 +80,10 @@ export class PriceDataManager {
             throw error;
         }
     }
+
+    private async generateViolinMusic() {
+        
+    }
 }
 
 export { type PriceData, type ViolinLog };

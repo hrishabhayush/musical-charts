@@ -12,6 +12,8 @@ contract AMMReferenceTest is Test {
     SERC20 baseAsset;
     SERC20 quoteAsset;
 
+    address testAdmin = address(0xabcd);
+
     uint256 constant WAD = 1e18;
     uint8 constant WAD_ZEROS = 18;
 
@@ -23,7 +25,7 @@ contract AMMReferenceTest is Test {
         quoteAsset = new SERC20("Chainlink", "LINK");
 
         // Start with pool price 1 LINK = 20 USDC
-        amm = new AMMReference(SERC20(address(baseAsset)), SERC20(address(quoteAsset)), WAD, 25 * WAD);
+        amm = new AMMReference(SERC20(address(baseAsset)), SERC20(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
         baseAsset.mint(saddress(address(this)), suint256(200000 * WAD));
         quoteAsset.mint(saddress(address(this)), suint256(10000 * WAD));
         baseAsset.approve(saddress(address(amm)), suint256(200000 * WAD));

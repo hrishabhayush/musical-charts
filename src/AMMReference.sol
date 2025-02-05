@@ -16,7 +16,7 @@ contract AMMReference is ReentrancyGuard {
     SERC20 public baseAsset;
     SERC20 public quoteAsset;
 
-    saddress contract_address;
+    saddress adminAddress;
 
     suint256 wad;
     suint256 priceReveal;
@@ -24,37 +24,39 @@ contract AMMReference is ReentrancyGuard {
     suint256 baseReserve;
     suint256 quoteReserve;
 
-    mapping(address => bool) public hasSwapped;
-    mapping(address => uint256) public lastSwapTimestamp;
+    mapping(saddress => sbool) hasSwapped;
+    mapping(saddress => suint256) lastSwapTimestamp;
 
     event Listening(address indexed user, uint256 timestamp);
-    event SwapExecuted(address indexed user, uint256 timestamp);
+    event SwapExecuted(address indexed user);
 
     modifier onlyViolin() {
-        require(hasSwapped[msg.sender], "Only violin can call this function");
+        require(hasSwapped[saddress(msg.sender)], "Only violin can call this function");
         _;
     }
 
     modifier onlyListener() {
-        require(hasSwapped[msg.sender], "You are not the listener");
+        require(hasSwapped[saddress(msg.sender)], "You are not the listener");
         _;
     }
 
-    modifier onlyAdmin() {
-        require(saddress(msg.sender) == contract_address, "You are not the admin");
-        _;
-    }
+    // modifier onlyAdmin() {
+    //     require(saddress(msg.sender)==adminAddress, "You are not the admin");
+    //     _;
+    // }
 
     function listen() external {
-        hasSwapped[msg.sender] = true;
-        lastSwapTimestamp[msg.sender] = block.timestamp;
+        hasSwapped[saddress(msg.sender)] = sbool(true);
+        lastSwapTimestamp[saddress(msg.sender)] = suint256(block.timestamp);
         emit Listening(msg.sender, block.timestamp);
         // Off-chain logic: decrypt the data for music generation, but don't reveal
     }
 
-    constructor(SERC20 _baseAsset, SERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal) {
+    constructor(SERC20 _baseAsset, SERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal, address _adminAddress) {
         baseAsset = _baseAsset;
         quoteAsset = _quoteAsset;
+
+        adminAddress = saddress(_adminAddress);
 
         // Stored as suint256 for convenience. Not actually shielded bc it's a
         // transparent parameter in the constructor
@@ -83,7 +85,8 @@ contract AMMReference is ReentrancyGuard {
     function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolin {
         // Price gets revealed here
         require(
-            block.timestamp >= lastSwapTimestamp[msg.sender] + 10 seconds, "Must wait 10seconds before calling swap"
+            suint256(block.timestamp) >= suint256(lastSwapTimestamp[saddress(msg.sender)]) + suint256(10 seconds),
+            "Must wait 10seconds before calling swap"
         );
 
         suint256 baseOut;
@@ -92,7 +95,7 @@ contract AMMReference is ReentrancyGuard {
         (baseOut, baseReserve, quoteReserve) = _swap(baseAsset, quoteAsset, baseReserve, quoteReserve, baseIn);
         (quoteOut, quoteReserve, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteIn);
 
-        emit SwapExecuted(msg.sender, block.timestamp);
+        emit SwapExecuted(msg.sender);
     }
 
     /*
