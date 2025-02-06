@@ -20,6 +20,8 @@ contract AMMReferenceTest is Test {
     address constant SWAPPER1_ADDR = address(123);
     address constant SWAPPER2_ADDR = address(456);
 
+    address constant NON_LISTENER_ADDR = address(789);
+
     function setUp() public {
         baseAsset = new SERC20("Circle", "USDC");
         quoteAsset = new SERC20("Chainlink", "LINK");
@@ -37,6 +39,10 @@ contract AMMReferenceTest is Test {
         quoteAsset.mint(saddress(SWAPPER1_ADDR), suint256(50000 * WAD));
         baseAsset.mint(saddress(SWAPPER2_ADDR), suint256(50000 * WAD));
         quoteAsset.mint(saddress(SWAPPER2_ADDR), suint256(50000 * WAD));
+
+        // Another address that starts with 50k units of each, LINK and USDC
+        baseAsset.mint(saddress(NON_LISTENER_ADDR), suint256(50000 * WAD));
+        quoteAsset.mint(saddress(NON_LISTENER_ADDR), suint256(50000 * WAD));
 
         // Request violin access for test accounts
         vm.startPrank(SWAPPER1_ADDR);
@@ -111,5 +117,39 @@ contract AMMReferenceTest is Test {
         vm.warp(block.timestamp + 11);
         amm.swap(suint256(50000 * WAD), suint256(0));
         vm.stopPrank();
+    }
+
+    function test_Access() public {
+        // Non-listener should not be able to call swap
+        vm.startPrank(NON_LISTENER_ADDR);
+        vm.expectRevert("Only violin can call this function");
+        amm.swap(suint256(50000 * WAD), suint256(0));
+        vm.stopPrank();
+
+        // Unauthorized call to getPriceGated should revert
+        vm.startPrank(NON_LISTENER_ADDR);
+        vm.expectRevert();
+        amm.getPriceGated();
+        vm.stopPrank();
+
+        // After the address gains listener status, they can call swap
+        vm.startPrank(NON_LISTENER_ADDR);
+        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
+        amm.listen();
+        vm.warp(block.timestamp + 11);
+        amm.swap(suint256(50000 * WAD), suint256(0));
+        amm.getPriceGated();
+        vm.stopPrank();
+    }
+
+    function test_ZeroSwap() public {
+        vm.startPrank(SWAPPER1_ADDR);
+        amm.listen();
+        uint256 priceT0 = amm.getPrice();
+        vm.warp(block.timestamp + 11);
+        amm.swap(suint256(0), suint256(0));
+        vm.stopPrank();
+
+        assertGt(priceT0, amm.getPrice());
     }
 }
