@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "solmate/tokens/ERC20.sol";
-import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
+import "lib/solmate/src/tokens/ERC20.sol";
+import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
 
 import "../src/AMMReference.sol";
-import {Test, console} from "forge-std/Test.sol";
+import {Test, console} from "lib/forge-std/src/Test.sol";
 
 contract AMMReferenceTest is Test {
     AMMReference public amm;
@@ -50,6 +50,7 @@ contract AMMReferenceTest is Test {
 
     function test_PriceUp() public {
         vm.startPrank(SWAPPER1_ADDR);
+        vm.warp(block.timestamp + 11);
 
         uint256 priceT0 = amm.getPrice();
         uint256 swapperBaseT0 = baseAsset.balanceOf();
@@ -66,12 +67,15 @@ contract AMMReferenceTest is Test {
     }
 
     function test_PriceNetDown() public {
-        uint256 priceT0 = amm.getPrice();
         vm.startPrank(SWAPPER1_ADDR);
+        vm.warp(block.timestamp + 11);
+        uint256 priceT0 = amm.getPrice();
         baseAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
         amm.swap(suint256(5000 * WAD), suint256(0));
+        vm.stopPrank();
 
         vm.startPrank(SWAPPER2_ADDR);
+        vm.warp(block.timestamp + 11);
         quoteAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
         amm.swap(suint256(0), suint256(5000 * WAD));
 
@@ -87,6 +91,7 @@ contract AMMReferenceTest is Test {
 
         // Should see price when 1 LINK = 31 USDC after this swap
         vm.startPrank(SWAPPER1_ADDR);
+        vm.warp(block.timestamp + 11);
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(50000 * WAD), suint256(0));
         vm.stopPrank();
