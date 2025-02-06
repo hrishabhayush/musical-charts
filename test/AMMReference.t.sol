@@ -97,4 +97,19 @@ contract AMMReferenceTest is Test {
         vm.stopPrank();
         amm.getPriceGated();
     }
+
+    function test_SwapTiming() public {
+        vm.startPrank(SWAPPER1_ADDR);
+
+        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
+        // Immediately attempt another swap 
+        // Should revert due to timing restriction
+        vm.expectRevert("Must wait 10 seconds before calling swap");
+        amm.swap(suint256(50000 * WAD), suint256(0));
+
+        // Wait 10 seconds and try again
+        vm.warp(block.timestamp + 11);
+        amm.swap(suint256(50000 * WAD), suint256(0));
+        vm.stopPrank();
+    }
 }

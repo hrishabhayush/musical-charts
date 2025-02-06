@@ -86,7 +86,7 @@ contract AMMReference is ReentrancyGuard {
         // Price gets revealed here
         require(
             suint256(block.timestamp) >= suint256(lastSwapTimestamp[saddress(msg.sender)]) + suint256(10 seconds),
-            "Must wait 10seconds before calling swap"
+            "Must wait 10 seconds before calling swap"
         );
 
         suint256 baseOut;
