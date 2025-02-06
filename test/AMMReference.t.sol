@@ -108,7 +108,8 @@ contract AMMReferenceTest is Test {
         vm.startPrank(SWAPPER1_ADDR);
 
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
-        // Immediately attempt another swap 
+
+        // Immediately attempt another swap
         // Should revert due to timing restriction
         vm.expectRevert("Must wait 10 seconds before calling swap");
         amm.swap(suint256(50000 * WAD), suint256(0));
@@ -145,11 +146,19 @@ contract AMMReferenceTest is Test {
     function test_ZeroSwap() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
-        uint256 priceT0 = amm.getPrice();
         vm.warp(block.timestamp + 11);
+        uint256 priceT0 = amm.getPrice();
+        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(0), suint256(0));
         vm.stopPrank();
 
-        assertGt(priceT0, amm.getPrice());
+        vm.startPrank(SWAPPER2_ADDR);
+        amm.listen();
+        vm.warp(block.timestamp + 11);
+        quoteAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
+        amm.swap(suint256(0), suint256(0));
+
+        assertEq(priceT0, amm.getPrice());
+        vm.stopPrank();
     }
 }
