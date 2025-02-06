@@ -6,9 +6,9 @@
  */
 pragma solidity ^0.8.13;
 
-import "solmate/tokens/ERC20.sol";
-import "solmate/utils/FixedPointMathLib.sol";
-import "solmate/utils/ReentrancyGuard.sol";
+import "lib/solmate/src/tokens/ERC20.sol";
+import "lib/solmate/src/utils/FixedPointMathLib.sol";
+import "lib/solmate/src/utils/ReentrancyGuard.sol";
 
 import "./SERC20.sol";
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Script, console} from "forge-std/Script.sol";
+import {Script, console} from "lib/forge-std/src/Script.sol";
 import {AMMReference} from "../src/AMMReference.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {SERC20} from "../src/SERC20.sol";
 
 contract MockERC20 is SERC20 {
@@ -23,7 +23,7 @@ contract CounterScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        address admin = address(0xabcd);
+        address admin = address(0x14dC79964da2C08b23698B3D3cc7Ca32193d9955);
 
         amm = new AMMReference(baseAsset, quoteAsset, 1e18, 1e18, admin);
 
