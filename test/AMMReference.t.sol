@@ -188,6 +188,6 @@ contract AMMReferenceTest is Test {
         uint256 invariantAfter = baseAfter * quoteAfter;
 
         // Allow a small tolerance for rounding error.
-        assertApproxEqAbs(invariantBefore, invariantAfter, 1e21);
+        assertApproxEqAbs(invariantBefore, invariantAfter, 1e15);
     }
 }
