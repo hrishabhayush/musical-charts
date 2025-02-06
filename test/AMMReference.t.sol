@@ -149,6 +149,7 @@ contract AMMReferenceTest is Test {
         vm.warp(block.timestamp + 11);
         uint256 priceT0 = amm.getPrice();
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
+        
         amm.swap(suint256(0), suint256(0));
         vm.stopPrank();
 
@@ -160,5 +161,33 @@ contract AMMReferenceTest is Test {
 
         assertEq(priceT0, amm.getPrice());
         vm.stopPrank();
+    }
+
+    function test_LiquidityInvariance() public {
+        uint256 baseBefore = amm.getBaseReserve();
+        uint256 quoteBefore = amm.getQuoteReserve();
+
+        uint256 invariantBefore = baseBefore * quoteBefore;
+
+        // Have two different listeners perform swaps
+        vm.startPrank(SWAPPER1_ADDR);
+        vm.warp(block.timestamp + 11);
+        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
+        amm.swap(suint256(500 * WAD), suint256(0));
+        vm.stopPrank();
+
+        vm.startPrank(SWAPPER2_ADDR);
+        vm.warp(block.timestamp + 11);
+        quoteAsset.approve(saddress(address(amm)), suint256(20000 * WAD));
+        amm.swap(suint256(0), suint256(200 * WAD));
+        vm.stopPrank();
+
+        uint256 baseAfter = amm.getBaseReserve();
+        uint256 quoteAfter = amm.getQuoteReserve();
+
+        uint256 invariantAfter = baseAfter * quoteAfter;
+
+        // Allow a small tolerance for rounding error.
+        assertApproxEqAbs(invariantBefore, invariantAfter, 1e21);
     }
 }

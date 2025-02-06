@@ -3,7 +3,8 @@
   "module": "src/scripts/alchemy.ts",
   "type": "module",
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "solidity-coverage": "^0.8.14"
   },
   "dependencies": {
     "@magenta/music": "^1.23.1",

@@ -30,21 +30,25 @@ contract AMMReference is ReentrancyGuard {
     event Listening(address indexed user, uint256 timestamp);
     event SwapExecuted(address indexed user);
 
+    /* 
+     * Only violin can call this function
+     */
     modifier onlyViolin() {
         require(hasSwapped[saddress(msg.sender)], "Only violin can call this function");
         _;
     }
 
+    /* 
+     * Only listener can call this function
+     */
     modifier onlyListener() {
         require(hasSwapped[saddress(msg.sender)], "You are not the listener");
         _;
     }
 
-    // modifier onlyAdmin() {
-    //     require(saddress(msg.sender)==adminAddress, "You are not the admin");
-    //     _;
-    // }
-
+    /* 
+     * Listen to the music
+     */
     function listen() external {
         hasSwapped[saddress(msg.sender)] = sbool(true);
         lastSwapTimestamp[saddress(msg.sender)] = suint256(block.timestamp);
@@ -81,8 +85,8 @@ contract AMMReference is ReentrancyGuard {
      * Wrapper around swap so calldata for trade looks the same regardless of
      * direction.
      */
-    // After listening to the music, the user can call this function to swap the assets
     function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolin {
+        // After listening to the music, the user can call this function to swap the assets
         // Price gets revealed here
         require(
             suint256(block.timestamp) >= suint256(lastSwapTimestamp[saddress(msg.sender)]) + suint256(10 seconds),
@@ -156,5 +160,13 @@ contract AMMReference is ReentrancyGuard {
     modifier requirePriceSufficient() {
         require(_computePrice() >= priceReveal, "Price of quote asset is not high enough.");
         _;
+    }
+
+    function getBaseReserve() external view returns (uint256) {
+        return uint256(baseReserve);
+    }
+
+    function getQuoteReserve() external view returns (uint256) {
+        return uint256(quoteReserve);
     }
 }
