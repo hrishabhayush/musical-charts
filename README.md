@@ -53,7 +53,7 @@ $ sanvil
 ### Deploy
 
 ```shell
-$ sforge script script/ViolinAMM.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ sforge script script/ViolinAMM.s.sol:ViolinAMMScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```
 
 ### Help
