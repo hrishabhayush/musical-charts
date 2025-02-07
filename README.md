@@ -14,58 +14,47 @@ Focus on engagement and excitement rather than commercial viability, providing a
 ## Get Involved
 Join us in redefining data engagement through sound!
 
-## Documentation
-
-https://book.getfoundry.sh/
-
 ## Usage
 
 ### Build
 
 ```shell
-$ forge build
+$ sforge build
 ```
 
 ### Test
 
 ```shell
-$ forge test
+$ sforge test
 ```
 
 ### Format
 
 ```shell
-$ forge fmt
+$ sforge fmt
 ```
 
 ### Gas Snapshots
 
 ```shell
-$ forge snapshot
+$ sforge snapshot
 ```
 
 ### Anvil
 
 ```shell
-$ anvil
+$ sanvil
 ```
 
 ### Deploy
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
+$ sforge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```
 
 ### Help
 
 ```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+$ sforge --help
+$ sanvil --help
 ```
