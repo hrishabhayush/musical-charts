@@ -10,11 +10,11 @@ import "lib/solmate/src/tokens/ERC20.sol";
 import "lib/solmate/src/utils/FixedPointMathLib.sol";
 import "lib/solmate/src/utils/ReentrancyGuard.sol";
 
-import "./SERC20.sol";
+import "./ViolinCoin.sol";
 
 contract AMMReference is ReentrancyGuard {
-    SERC20 public baseAsset;
-    SERC20 public quoteAsset;
+    ViolinCoin public baseAsset;
+    ViolinCoin public quoteAsset;
 
     saddress adminAddress;
 
@@ -56,7 +56,7 @@ contract AMMReference is ReentrancyGuard {
         // Off-chain logic: decrypt the data for music generation, but don't reveal
     }
 
-    constructor(SERC20 _baseAsset, SERC20 _quoteAsset, uint256 _wad, uint256 _priceReveal, address _adminAddress) {
+    constructor(ViolinCoin _baseAsset, ViolinCoin _quoteAsset, uint256 _wad, uint256 _priceReveal, address _adminAddress) {
         baseAsset = _baseAsset;
         quoteAsset = _quoteAsset;
 
@@ -105,7 +105,7 @@ contract AMMReference is ReentrancyGuard {
     /*
      * Swap for cfAMM. No fees.
      */
-    function _swap(SERC20 tokenIn, SERC20 tokenOut, suint256 reserveIn, suint256 reserveOut, suint256 amountIn)
+    function _swap(ViolinCoin tokenIn, ViolinCoin tokenOut, suint256 reserveIn, suint256 reserveOut, suint256 amountIn)
         internal
         returns (suint256 amountOut, suint256 reserveInNew, suint256 reserveOutNew)
     {
@@ -168,5 +168,5 @@ contract AMMReference is ReentrancyGuard {
 
     function getQuoteReserve() external view returns (uint256) {
         return uint256(quoteReserve);
-    }
+    }   
 }
