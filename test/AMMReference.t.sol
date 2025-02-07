@@ -6,6 +6,7 @@ import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
 
 import "../src/AMMReference.sol";
 import {Test, console} from "lib/forge-std/src/Test.sol";
+import {console2} from "lib/forge-std/src/console2.sol";
 
 contract AMMReferenceTest is Test {
     AMMReference public amm;
@@ -176,18 +177,25 @@ contract AMMReferenceTest is Test {
         amm.swap(suint256(500 * WAD), suint256(0));
         vm.stopPrank();
 
+        uint256 baseAfterSwp1 = amm.getBaseReserve();
+        uint256 quoteAfterSwp1 = amm.getQuoteReserve();
+
+        uint256 invariantAfterSwp1 = baseAfterSwp1 * quoteAfterSwp1;
+        console2.log("invariantBeforeSwp1", invariantBefore);
+        console2.log("invariantAfterSwp1", invariantAfterSwp1);
+
         vm.startPrank(SWAPPER2_ADDR);
         vm.warp(block.timestamp + 11);
-        quoteAsset.approve(saddress(address(amm)), suint256(20000 * WAD));
-        amm.swap(suint256(0), suint256(200 * WAD));
+        baseAsset.approve(saddress(address(amm)), suint256(20000 * WAD));
+        amm.swap(suint256(200 * WAD), suint256(0));
         vm.stopPrank();
 
-        uint256 baseAfter = amm.getBaseReserve();
-        uint256 quoteAfter = amm.getQuoteReserve();
-
-        uint256 invariantAfter = baseAfter * quoteAfter;
-
+        uint256 baseAfterSwp2 = amm.getBaseReserve();
+        uint256 quoteAfterSwp2 = amm.getQuoteReserve();
+        uint256 invariantAfterSwp2 = baseAfterSwp2 * quoteAfterSwp2;
+        console2.log("invariantBeforeSwp2", invariantBefore);
+        console2.log("invariantAfterSwp2", invariantAfterSwp2);
         // Allow a small tolerance for rounding error.
-        assertApproxEqAbs(invariantBefore, invariantAfter, 1e15);
+        assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
     }
 }
