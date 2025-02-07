@@ -1,18 +1,22 @@
-# Musical Chart Project
+# Musical Charts
 
 ## Overview
-The **Musical Chart Project** transforms stock market data into music using an AI-powered violin within a **Trusted Execution Environment (TEE)**. Users can experience market trends through sound without directly accessing the data.
+**Musical Charts** work on creating an Automated Market Maker (AMM) where people can swap tokens only after listening to music. Users experience market trends through AI generated violin music, and they are allowed to make a trade signal after they have listened to the generated music. The project is more fun because each trade triggers a new violin melody based on the market data, ensuring a fresh and engaging experience every time for the user.
 
-## Concept
-- **Secure Data Interpretation:** Stock market prices are encrypted and processed in a TEE.
-- **AI-Powered Violin:** Converts encrypted data into musical compositions.
-- **Interactive Experience:** Users can pay to hear trends as music.
+## Problem
+Price data of any token or memecoin alone is not engaging to a general user and often user doesn't feel the thrill or enjoyment while trading these coins. 
+
+## Insight
+Restricting financial signals of buy/sell through music can foster a more intuitive and emotional connection to market trends.
+
+## Solution
+Encrypt and process real-time price data in a *Trusted Execution Environment* (TEE) to generate violin compositions, allowing users to ‘listen’ to market changes before they swap.
 
 ## Goals
 Focus on engagement and excitement rather than commercial viability, providing a unique, shareable experience.
 
 ## Get Involved
-Join us in redefining data engagement through sound!
+Join us in redefining data engagement and creating a fun trading experience through sound!
 
 ## Usage
 
