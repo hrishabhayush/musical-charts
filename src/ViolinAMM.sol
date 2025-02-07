@@ -12,7 +12,7 @@ import "lib/solmate/src/utils/ReentrancyGuard.sol";
 
 import "./ViolinCoin.sol";
 
-contract AMMReference is ReentrancyGuard {
+contract ViolinAMM is ReentrancyGuard {
     ViolinCoin public baseAsset;
     ViolinCoin public quoteAsset;
 

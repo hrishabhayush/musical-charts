@@ -2,11 +2,11 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "lib/forge-std/src/Script.sol";
-import {AMMReference} from "../src/AMMReference.sol";
+import {ViolinAMM} from "../src/ViolinAMM.sol";
 import {ViolinCoin} from "../src/ViolinCoin.sol";
 
-contract CounterScript is Script {
-    AMMReference public amm;
+contract ViolinAMMScript is Script {
+    ViolinAMM public amm;
     ViolinCoin public baseAsset;
     ViolinCoin public quoteAsset;
 
@@ -19,7 +19,7 @@ contract CounterScript is Script {
     function run() public {
         vm.startBroadcast();
         address admin = address(0x14dC79964da2C08b23698B3D3cc7Ca32193d9955);
-        amm = new AMMReference(baseAsset, quoteAsset, 1e18, 1e18, admin);
+        amm = new ViolinAMM(baseAsset, quoteAsset, 1e18, 1e18, admin);
         vm.stopBroadcast();
     }
 }

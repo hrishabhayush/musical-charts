@@ -4,12 +4,12 @@ pragma solidity ^0.8.13;
 import "lib/solmate/src/tokens/ERC20.sol";
 import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
 
-import "../src/AMMReference.sol";
+import "../src/ViolinAMM.sol";
 import {Test, console} from "lib/forge-std/src/Test.sol";
 import {console2} from "lib/forge-std/src/console2.sol";
 
-contract AMMReferenceTest is Test {
-    AMMReference public amm;
+contract ViolinAMMTest is Test {
+    ViolinAMM public amm;
     ViolinCoin baseAsset;
     ViolinCoin quoteAsset;
 
@@ -27,8 +27,8 @@ contract AMMReferenceTest is Test {
         baseAsset = new ViolinCoin(address(this), "Circle", "USDC", 18);
         quoteAsset = new ViolinCoin(address(this), "Chainlink", "LINK", 18);
 
-        // Start with pool price 1 LINK = 20 USDC
-        amm = new AMMReference(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
+        // Start with pool price 1 LINK = 25 USDC
+        amm = new ViolinAMM(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
         baseAsset.mint(saddress(address(this)), suint256(200000 * WAD));
         quoteAsset.mint(saddress(address(this)), suint256(10000 * WAD));
         baseAsset.approve(saddress(address(amm)), suint256(200000 * WAD));
