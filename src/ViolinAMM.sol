@@ -17,9 +17,15 @@ import "./ViolinCoin.sol";
 //////////////////////////////////////////////////////////////*/
 
 contract ViolinAMM is ReentrancyGuard {
+    /*//////////////////////////////////////////////////////////////
+    //                        TOKEN STORAGE
+    //////////////////////////////////////////////////////////////*/
     ViolinCoin public baseAsset;
     ViolinCoin public quoteAsset;
 
+    /*//////////////////////////////////////////////////////////////
+    //                        AMM STORAGE
+    //////////////////////////////////////////////////////////////*/
     saddress adminAddress;
 
     suint256 wad;
@@ -28,18 +34,26 @@ contract ViolinAMM is ReentrancyGuard {
     suint256 baseReserve;
     suint256 quoteReserve;
 
+
     mapping(saddress => sbool) hasListened;
     mapping(saddress => suint256) lastListenedTimestamp;
 
-    // This reveals the activity on the chain when a user puts a request to listen
-    // should be an encrypted event
+    /*//////////////////////////////////////////////////////////////
+    //                        EVENTS
+    //////////////////////////////////////////////////////////////*/
+   
+    // Listening event should be an encrypted event
+    /// @notice Emitted when a user puts a request to listen
     event Listening(address indexed user);
 
-    // This event is emitted to reveal that a swap was executed on the blockchain
-    // Only emitted after the user has successfully called swap
+    /// @notice Emitted when a swap is executed by the user
     event SwapExecuted(address indexed user);
 
-    /* 
+    /*//////////////////////////////////////////////////////////////
+    //                        MODIFIERS
+    //////////////////////////////////////////////////////////////*/
+
+    /*
      * Only listener can call this function
      */
     modifier onlyViolinListener() {
@@ -47,7 +61,7 @@ contract ViolinAMM is ReentrancyGuard {
         _;
     }
 
-    /* 
+    /*
      * Listen to the music
      */
     function listen() external {
@@ -56,6 +70,9 @@ contract ViolinAMM is ReentrancyGuard {
         emit Listening(msg.sender);
     }
 
+    /*//////////////////////////////////////////////////////////////
+                               CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
     constructor(
         ViolinCoin _baseAsset,
         ViolinCoin _quoteAsset,
@@ -73,6 +90,9 @@ contract ViolinAMM is ReentrancyGuard {
         wad = suint256(_wad);
         priceReveal = suint256(_priceReveal);
     }
+    /*//////////////////////////////////////////////////////////////
+                            AMM LOGIC
+    //////////////////////////////////////////////////////////////*/
 
     /*
      * Add liquidity to pool. No LP rewards in this implementation.
@@ -170,10 +190,20 @@ contract ViolinAMM is ReentrancyGuard {
         _;
     }
 
+    /*//////////////////////////////////////////////////////////////
+    //                        GETTERS
+    //////////////////////////////////////////////////////////////*/
+
+    /*
+     * Get the base reserve
+     */
     function getBaseReserve() external view returns (uint256) {
         return uint256(baseReserve);
     }
 
+    /*
+     * Get the quote reserve
+     */
     function getQuoteReserve() external view returns (uint256) {
         return uint256(quoteReserve);
     }
