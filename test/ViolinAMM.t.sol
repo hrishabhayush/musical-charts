@@ -6,7 +6,6 @@ import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
 
 import "../src/ViolinAMM.sol";
 import {Test, console} from "lib/forge-std/src/Test.sol";
-import {console2} from "lib/forge-std/src/console2.sol";
 
 contract ViolinAMMTest is Test {
     ViolinAMM public amm;
@@ -193,8 +192,6 @@ contract ViolinAMMTest is Test {
         uint256 quoteAfterSwp1 = amm.getQuoteReserve();
 
         uint256 invariantAfterSwp1 = baseAfterSwp1 * quoteAfterSwp1;
-        console2.log("invariantBeforeSwp1", invariantBefore);
-        console2.log("invariantAfterSwp1", invariantAfterSwp1);
 
         vm.startPrank(SWAPPER2_ADDR);
         vm.warp(block.timestamp + 11);
@@ -205,13 +202,11 @@ contract ViolinAMMTest is Test {
         uint256 baseAfterSwp2 = amm.getBaseReserve();
         uint256 quoteAfterSwp2 = amm.getQuoteReserve();
         uint256 invariantAfterSwp2 = baseAfterSwp2 * quoteAfterSwp2;
-        console2.log("invariantBeforeSwp2", invariantAfterSwp1);
-        console2.log("invariantAfterSwp2", invariantAfterSwp2);
         // Allow a small tolerance for rounding error.
+        assertApproxEqRel(invariantBefore, invariantAfterSwp1, 1e16);
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
     }
 
-    // Test case for hasListened - listen once and then listen another 
     function test_ListenedOnce() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
