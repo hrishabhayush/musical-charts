@@ -7,11 +7,24 @@ import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
 import "../src/ViolinAMM.sol";
 import {Test, console} from "lib/forge-std/src/Test.sol";
 
+/*//////////////////////////////////////////////////////////////
+//                    ViolinAMMTest Contract
+//////////////////////////////////////////////////////////////*/
 contract ViolinAMMTest is Test {
+    /*//////////////////////////////////////////////////////////////
+    //                        AMM STORAGE
+    //////////////////////////////////////////////////////////////*/
     ViolinAMM public amm;
+
+    /*//////////////////////////////////////////////////////////////
+    //                        TOKEN STORAGE
+    //////////////////////////////////////////////////////////////*/
     ViolinCoin baseAsset;
     ViolinCoin quoteAsset;
-
+    
+    /*//////////////////////////////////////////////////////////////
+    //                        AMM STORAGE
+    //////////////////////////////////////////////////////////////*/
     address testAdmin = address(0xabcd);
 
     uint256 constant WAD = 1e18;
@@ -22,6 +35,9 @@ contract ViolinAMMTest is Test {
 
     address constant NON_LISTENER_ADDR = address(789);
 
+    /*//////////////////////////////////////////////////////////////
+    //                        SETUP
+    //////////////////////////////////////////////////////////////*/
     function setUp() public {
         baseAsset = new ViolinCoin(address(this), "Circle", "USDC", 18);
         quoteAsset = new ViolinCoin(address(this), "Chainlink", "LINK", 18);
@@ -54,6 +70,12 @@ contract ViolinAMMTest is Test {
         vm.stopPrank();
     }
 
+    /*//////////////////////////////////////////////////////////////
+    //                        TEST CASES 
+    //////////////////////////////////////////////////////////////*/
+    /*
+     * Test case for price going up after swap
+     */
     function test_PriceUp() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
@@ -77,6 +99,9 @@ contract ViolinAMMTest is Test {
         vm.stopPrank();
     }
 
+    /*
+     * Test case for price going down after swap. 
+     */
     function test_PriceNetDown() public {
         vm.startPrank(SWAPPER1_ADDR);
         vm.warp(block.timestamp + 11);
@@ -99,6 +124,10 @@ contract ViolinAMMTest is Test {
         vm.stopPrank();
     }
 
+    /*
+     * Test case for revealing price. If the price is not above the threshold,
+     * getPriceGated should revert.
+     */
     function test_PriceReveal() public {
         // Shouldn't see price when 1 LINK = 20 USDC
         vm.expectRevert();
@@ -113,6 +142,10 @@ contract ViolinAMMTest is Test {
         amm.getPriceGated();
     }
 
+    /*
+     * Test case for swap timing. If the user attempts to swap too quickly,
+     * the swap should revert.
+     */
     function test_SwapTiming() public {
         vm.startPrank(SWAPPER1_ADDR);
 
@@ -129,6 +162,10 @@ contract ViolinAMMTest is Test {
         vm.stopPrank();
     }
 
+    /*
+     * Test case for access control. If the user is not a listener, they should
+     * not be able to call swap or getPriceGated.
+     */
     function test_Access() public {
         // Non-listener should not be able to call swap
         vm.startPrank(NON_LISTENER_ADDR);
@@ -152,6 +189,10 @@ contract ViolinAMMTest is Test {
         vm.stopPrank();
     }
 
+    /*
+     * Test case for zero swap. If the user attempts to swap zero of both assets,
+     * then there is no change in the price.
+     */
     function test_ZeroSwap() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
@@ -175,6 +216,11 @@ contract ViolinAMMTest is Test {
         vm.stopPrank();
     }
 
+    /*
+     * Test case for liquidity invariance. If two different listeners perform
+     * swaps, the price should remain almost the same with some level of rounding
+     * error.
+     */
     function test_LiquidityInvariance() public {
         uint256 baseBefore = amm.getBaseReserve();
         uint256 quoteBefore = amm.getQuoteReserve();
@@ -207,6 +253,10 @@ contract ViolinAMMTest is Test {
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
     }
 
+    /*
+     * Test case for listenedOnce. If the user attempts to call getPrice too quickly,
+     * it should revert.
+     */
     function test_ListenedOnce() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
