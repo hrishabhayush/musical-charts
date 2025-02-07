@@ -10,8 +10,8 @@ import {console2} from "lib/forge-std/src/console2.sol";
 
 contract AMMReferenceTest is Test {
     AMMReference public amm;
-    SERC20 baseAsset;
-    SERC20 quoteAsset;
+    ViolinCoin baseAsset;
+    ViolinCoin quoteAsset;
 
     address testAdmin = address(0xabcd);
 
@@ -24,11 +24,11 @@ contract AMMReferenceTest is Test {
     address constant NON_LISTENER_ADDR = address(789);
 
     function setUp() public {
-        baseAsset = new SERC20("Circle", "USDC");
-        quoteAsset = new SERC20("Chainlink", "LINK");
+        baseAsset = new ViolinCoin(address(this), "Circle", "USDC", 18);
+        quoteAsset = new ViolinCoin(address(this), "Chainlink", "LINK", 18);
 
         // Start with pool price 1 LINK = 20 USDC
-        amm = new AMMReference(SERC20(address(baseAsset)), SERC20(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
+        amm = new AMMReference(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
         baseAsset.mint(saddress(address(this)), suint256(200000 * WAD));
         quoteAsset.mint(saddress(address(this)), suint256(10000 * WAD));
         baseAsset.approve(saddress(address(amm)), suint256(200000 * WAD));
@@ -193,7 +193,7 @@ contract AMMReferenceTest is Test {
         uint256 baseAfterSwp2 = amm.getBaseReserve();
         uint256 quoteAfterSwp2 = amm.getQuoteReserve();
         uint256 invariantAfterSwp2 = baseAfterSwp2 * quoteAfterSwp2;
-        console2.log("invariantBeforeSwp2", invariantBefore);
+        console2.log("invariantBeforeSwp2", invariantAfterSwp1);
         console2.log("invariantAfterSwp2", invariantAfterSwp2);
         // Allow a small tolerance for rounding error.
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
