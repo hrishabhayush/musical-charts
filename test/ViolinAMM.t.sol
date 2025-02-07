@@ -168,7 +168,7 @@ contract ViolinAMMTest is Test {
         vm.warp(block.timestamp + 11);
         quoteAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(0), suint256(0));
-        
+
         amm.listen();
         vm.warp(block.timestamp + 11);
         assertEq(priceT0, amm.getPrice());

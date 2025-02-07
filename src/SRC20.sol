@@ -1,24 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.13;
 
-/*
- * Assumption:
- * The custom types `saddress` and `suint256` are defined elsewhere.
- * They are identical in behavior to address and uint256 respectively,
- * but signal that the underlying data is stored privately.
- */
-
 /*//////////////////////////////////////////////////////////////
 //                        ISRC20 Interface
 //////////////////////////////////////////////////////////////*/
 
 interface ISRC20 {
-    /*//////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
-    event Transfer(address indexed from, address indexed to, uint256 amount);
-    event Approval(address indexed owner, address indexed spender, uint256 amount);
-
     /*//////////////////////////////////////////////////////////////
                             METADATA FUNCTIONS
     //////////////////////////////////////////////////////////////*/
@@ -35,23 +22,11 @@ interface ISRC20 {
     function transferFrom(saddress from, saddress to, suint256 amount) external returns (bool);
 }
 
-
 /*//////////////////////////////////////////////////////////////
 //                         SRC20 Contract
 //////////////////////////////////////////////////////////////*/
 
 abstract contract SRC20 is ISRC20 {
-    /*//////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
-    // Leaks information to public, will replace with encrypted events
-    // event Transfer(address indexed from, address indexed to, uint256 amount);
-    // event Approval(
-    //     address indexed owner,
-    //     address indexed spender,
-    //     uint256 amount
-    // );
-
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -84,42 +59,30 @@ abstract contract SRC20 is ISRC20 {
         return uint256(balance[saddress(msg.sender)]);
     }
 
-    function approve(
-        saddress spender,
-        suint256 amount
-    ) public virtual returns (bool) {
+    function approve(saddress spender, suint256 amount) public virtual returns (bool) {
         allowance[saddress(msg.sender)][spender] = amount;
-        emit Approval(msg.sender, address(spender), uint256(amount));
         return true;
     }
 
-    function transfer(
-        saddress to,
-        suint256 amount
-    ) public virtual returns (bool) {
+    function transfer(saddress to, suint256 amount) public virtual returns (bool) {
         // msg.sender is public information, casting to saddress below doesn't change this
         balance[saddress(msg.sender)] -= amount;
         unchecked {
             balance[to] += amount;
         }
-        emit Transfer(msg.sender, address(to), uint256(amount));
         return true;
     }
 
-    function transferFrom(
-        saddress from,
-        saddress to,
-        suint256 amount
-    ) public virtual returns (bool) {
+    function transferFrom(saddress from, saddress to, suint256 amount) public virtual returns (bool) {
         suint256 allowed = allowance[from][saddress(msg.sender)]; // Saves gas for limited approvals.
-        if (allowed != suint256(type(uint256).max))
+        if (allowed != suint256(type(uint256).max)) {
             allowance[from][saddress(msg.sender)] = allowed - amount;
+        }
 
         balance[from] -= amount;
         unchecked {
             balance[to] += amount;
         }
-        emit Transfer(msg.sender, address(to), uint256(amount));
         return true;
     }
 
@@ -131,6 +94,10 @@ abstract contract SRC20 is ISRC20 {
         unchecked {
             balance[to] += amount;
         }
-        emit Transfer(address(0), address(to), uint256(amount));
+    }
+
+    function _burn(saddress to, suint256 amount) internal virtual {
+        totalSupply -= amount;
+        balance[to] -= amount;
     }
 }

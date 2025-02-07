@@ -12,6 +12,10 @@ import "lib/solmate/src/utils/ReentrancyGuard.sol";
 
 import "./ViolinCoin.sol";
 
+/*//////////////////////////////////////////////////////////////
+//                         ViolinAMM Contract
+//////////////////////////////////////////////////////////////*/
+
 contract ViolinAMM is ReentrancyGuard {
     ViolinCoin public baseAsset;
     ViolinCoin public quoteAsset;
@@ -27,12 +31,12 @@ contract ViolinAMM is ReentrancyGuard {
     mapping(saddress => sbool) hasListened;
     mapping(saddress => suint256) lastListenedTimestamp;
 
-    // This reveals the activity on the chain when a user puts a request to listen 
+    // This reveals the activity on the chain when a user puts a request to listen
     // should be an encrypted event
     event Listening(address indexed user);
-    
+
     // This event is emitted to reveal that a swap was executed on the blockchain
-    // Only emitted after the user has successfully called swap 
+    // Only emitted after the user has successfully called swap
     event SwapExecuted(address indexed user);
 
     /* 
@@ -52,7 +56,13 @@ contract ViolinAMM is ReentrancyGuard {
         emit Listening(msg.sender);
     }
 
-    constructor(ViolinCoin _baseAsset, ViolinCoin _quoteAsset, uint256 _wad, uint256 _priceReveal, address _adminAddress) {
+    constructor(
+        ViolinCoin _baseAsset,
+        ViolinCoin _quoteAsset,
+        uint256 _wad,
+        uint256 _priceReveal,
+        address _adminAddress
+    ) {
         baseAsset = _baseAsset;
         quoteAsset = _quoteAsset;
 
@@ -166,5 +176,5 @@ contract ViolinAMM is ReentrancyGuard {
 
     function getQuoteReserve() external view returns (uint256) {
         return uint256(quoteReserve);
-    }   
+    }
 }

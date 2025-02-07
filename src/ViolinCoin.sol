@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.13;
 
-import { SRC20, ISRC20 } from "./SRC20.sol";
+import {SRC20, ISRC20} from "./SRC20.sol";
 
 /*//////////////////////////////////////////////////////////////
 //                      IViolinCoin Interface
@@ -18,12 +18,9 @@ interface IViolinCoin is ISRC20 {
 contract ViolinCoin is SRC20, IViolinCoin {
     address public owner;
 
-    constructor(
-        address _owner, 
-        string memory _name, 
-        string memory _symbol,
-        uint8 _decimals
-    ) SRC20(_name, _symbol, _decimals) {
+    constructor(address _owner, string memory _name, string memory _symbol, uint8 _decimals)
+        SRC20(_name, _symbol, _decimals)
+    {
         owner = _owner;
     }
 
