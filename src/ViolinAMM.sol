@@ -24,25 +24,22 @@ contract ViolinAMM is ReentrancyGuard {
     suint256 baseReserve;
     suint256 quoteReserve;
 
-    mapping(saddress => sbool) hasSwapped;
-    mapping(saddress => suint256) lastSwapTimestamp;
+    mapping(saddress => sbool) hasListened;
+    mapping(saddress => suint256) lastListenedTimestamp;
 
-    event Listening(address indexed user, uint256 timestamp);
+    // This reveals the activity on the chain when a user puts a request to listen 
+    // should be an encrypted event
+    event Listening(address indexed user);
+    
+    // This event is emitted to reveal that a swap was executed on the blockchain
+    // Only emitted after the user has successfully called swap 
     event SwapExecuted(address indexed user);
-
-    /* 
-     * Only violin can call this function
-     */
-    modifier onlyViolin() {
-        require(hasSwapped[saddress(msg.sender)], "Only violin can call this function");
-        _;
-    }
 
     /* 
      * Only listener can call this function
      */
-    modifier onlyListener() {
-        require(hasSwapped[saddress(msg.sender)], "You are not the listener");
+    modifier onlyViolinListener() {
+        require(hasListened[saddress(msg.sender)], "You are not the listener");
         _;
     }
 
@@ -50,10 +47,9 @@ contract ViolinAMM is ReentrancyGuard {
      * Listen to the music
      */
     function listen() external {
-        hasSwapped[saddress(msg.sender)] = sbool(true);
-        lastSwapTimestamp[saddress(msg.sender)] = suint256(block.timestamp);
-        emit Listening(msg.sender, block.timestamp);
-        // Off-chain logic: decrypt the data for music generation, but don't reveal
+        hasListened[saddress(msg.sender)] = sbool(true);
+        lastListenedTimestamp[saddress(msg.sender)] = suint256(block.timestamp);
+        emit Listening(msg.sender);
     }
 
     constructor(ViolinCoin _baseAsset, ViolinCoin _quoteAsset, uint256 _wad, uint256 _priceReveal, address _adminAddress) {
@@ -85,11 +81,11 @@ contract ViolinAMM is ReentrancyGuard {
      * Wrapper around swap so calldata for trade looks the same regardless of
      * direction.
      */
-    function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolin {
+    function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolinListener {
         // After listening to the music, the user can call this function to swap the assets
         // Price gets revealed here
         require(
-            suint256(block.timestamp) >= suint256(lastSwapTimestamp[saddress(msg.sender)]) + suint256(10 seconds),
+            suint256(block.timestamp) >= suint256(lastListenedTimestamp[saddress(msg.sender)]) + suint256(10 seconds),
             "Must wait 10 seconds before calling swap"
         );
 
@@ -100,6 +96,7 @@ contract ViolinAMM is ReentrancyGuard {
         (quoteOut, quoteReserve, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteIn);
 
         emit SwapExecuted(msg.sender);
+        hasListened[saddress(msg.sender)] = sbool(false);
     }
 
     /*
@@ -132,7 +129,8 @@ contract ViolinAMM is ReentrancyGuard {
     /*
      * Bypasses priceReveal threshold. For testing purposes.
      */
-    function getPrice() external view onlyListener returns (uint256 price) {
+    function getPrice() external onlyViolinListener returns (uint256 price) {
+        hasListened[saddress(msg.sender)] = sbool(false);
         return uint256(_computePrice());
     }
 

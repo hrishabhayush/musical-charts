@@ -57,6 +57,7 @@ contract ViolinAMMTest is Test {
 
     function test_PriceUp() public {
         vm.startPrank(SWAPPER1_ADDR);
+        amm.listen();
         vm.warp(block.timestamp + 11);
 
         uint256 priceT0 = amm.getPrice();
@@ -64,8 +65,12 @@ contract ViolinAMMTest is Test {
         uint256 swapperQuoteT0 = quoteAsset.balanceOf();
 
         baseAsset.approve(saddress(address(amm)), suint256(30000 * WAD));
+        amm.listen();
+        vm.warp(block.timestamp + 11);
         amm.swap(suint256(30000 * WAD), suint256(0));
 
+        amm.listen();
+        vm.warp(block.timestamp + 11);
         assertLt(priceT0, amm.getPrice());
         assertGt(swapperBaseT0, baseAsset.balanceOf());
         assertLt(swapperQuoteT0, quoteAsset.balanceOf());
@@ -78,6 +83,8 @@ contract ViolinAMMTest is Test {
         vm.warp(block.timestamp + 11);
         uint256 priceT0 = amm.getPrice();
         baseAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
+        amm.listen();
+        vm.warp(block.timestamp + 11);
         amm.swap(suint256(5000 * WAD), suint256(0));
         vm.stopPrank();
 
@@ -86,6 +93,8 @@ contract ViolinAMMTest is Test {
         quoteAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
         amm.swap(suint256(0), suint256(5000 * WAD));
 
+        amm.listen();
+        vm.warp(block.timestamp + 11);
         assertGt(priceT0, amm.getPrice());
 
         vm.stopPrank();
@@ -124,7 +133,7 @@ contract ViolinAMMTest is Test {
     function test_Access() public {
         // Non-listener should not be able to call swap
         vm.startPrank(NON_LISTENER_ADDR);
-        vm.expectRevert("Only violin can call this function");
+        vm.expectRevert("You are not the listener");
         amm.swap(suint256(50000 * WAD), suint256(0));
         vm.stopPrank();
 
@@ -150,7 +159,8 @@ contract ViolinAMMTest is Test {
         vm.warp(block.timestamp + 11);
         uint256 priceT0 = amm.getPrice();
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
-        
+        amm.listen();
+        vm.warp(block.timestamp + 11);
         amm.swap(suint256(0), suint256(0));
         vm.stopPrank();
 
@@ -159,7 +169,9 @@ contract ViolinAMMTest is Test {
         vm.warp(block.timestamp + 11);
         quoteAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(0), suint256(0));
-
+        
+        amm.listen();
+        vm.warp(block.timestamp + 11);
         assertEq(priceT0, amm.getPrice());
         vm.stopPrank();
     }
@@ -197,5 +209,16 @@ contract ViolinAMMTest is Test {
         console2.log("invariantAfterSwp2", invariantAfterSwp2);
         // Allow a small tolerance for rounding error.
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
+    }
+
+    // Test case for hasListened - listen once and then listen another 
+    function test_ListenedOnce() public {
+        vm.startPrank(SWAPPER1_ADDR);
+        amm.listen();
+        vm.warp(block.timestamp + 11);
+        amm.getPrice();
+        vm.expectRevert();
+        amm.getPrice();
+        vm.stopPrank();
     }
 }
