@@ -31,7 +31,7 @@ contract Riff is ReentrancyGuard {
     // Fixed point arithmetic unit
     suint256 wad;
 
-    // Price reveal threshold   
+    // Price reveal threshold
     suint256 priceReveal;
 
     // Since the reserves are encrypted, people can't access
@@ -45,10 +45,6 @@ contract Riff is ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
     //                        EVENTS
     //////////////////////////////////////////////////////////////*/
-
-    // Listening event should be an encrypted event
-    /// @notice Emitted when a user puts a request to listen
-    event Listening(address indexed user);
 
     /// @notice Emitted when a swap is executed by the user
     event SwapExecuted(address indexed user);
@@ -71,7 +67,6 @@ contract Riff is ReentrancyGuard {
     function listen() external {
         hasListened[saddress(msg.sender)] = sbool(true);
         lastListenedTimestamp[saddress(msg.sender)] = suint256(block.timestamp);
-        emit Listening(msg.sender);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -116,12 +111,8 @@ contract Riff is ReentrancyGuard {
      * direction.
      */
     function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolinListener {
-        // After listening to the music, the user can call this function to swap the assets
-        // Price gets revealed here
-        require(
-            suint256(block.timestamp) >= suint256(lastListenedTimestamp[saddress(msg.sender)]) + suint256(10 seconds),
-            "Must wait 10 seconds before calling swap"
-        );
+        // After listening to the music, the swapper can call this function to swap the assets,
+        // then the price gets revealed to the swapper
 
         suint256 baseOut;
         suint256 quoteOut;
@@ -154,17 +145,9 @@ contract Riff is ReentrancyGuard {
     }
 
     /*
-     * Only returns price if it's above priceReveal threshold.
+     * Returns price of quote asset.
      */
-    function getPriceGated() external view requirePriceSufficient returns (uint256 price) {
-        return uint256(_computePrice());
-    }
-
-    /*
-     * Returns price of quote asset. Bypasses priceReveal threshold.
-     */
-    function getPrice() external onlyViolinListener returns (uint256 price) {
-        hasListened[saddress(msg.sender)] = sbool(false);
+    function getPrice() external view onlyViolinListener returns (uint256 price) {
         return uint256(_computePrice());
     }
 
@@ -184,13 +167,5 @@ contract Riff is ReentrancyGuard {
             "Overflow or division by zero"
         );
         z = (x * y) / denominator;
-    }
-
-    /*
-     * Assert price of quote asset above priceReveal threshold.
-     */
-    modifier requirePriceSufficient() {
-        require(_computePrice() >= priceReveal, "Price of quote asset is not high enough.");
-        _;
     }
 }

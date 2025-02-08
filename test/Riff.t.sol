@@ -79,19 +79,15 @@ contract ViolinAMMTest is Test {
     function test_PriceUp() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
-        vm.warp(block.timestamp + 11);
-
         uint256 priceT0 = amm.getPrice();
         uint256 swapperBaseT0 = baseAsset.balanceOf();
         uint256 swapperQuoteT0 = quoteAsset.balanceOf();
 
         baseAsset.approve(saddress(address(amm)), suint256(30000 * WAD));
         amm.listen();
-        vm.warp(block.timestamp + 11);
         amm.swap(suint256(30000 * WAD), suint256(0));
 
         amm.listen();
-        vm.warp(block.timestamp + 11);
         assertLt(priceT0, amm.getPrice());
         assertGt(swapperBaseT0, baseAsset.balanceOf());
         assertLt(swapperQuoteT0, quoteAsset.balanceOf());
@@ -104,21 +100,20 @@ contract ViolinAMMTest is Test {
      */
     function test_PriceNetDown() public {
         vm.startPrank(SWAPPER1_ADDR);
-        vm.warp(block.timestamp + 11);
+        amm.listen();
         uint256 priceT0 = amm.getPrice();
         baseAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
         amm.listen();
-        vm.warp(block.timestamp + 11);
         amm.swap(suint256(5000 * WAD), suint256(0));
         vm.stopPrank();
 
         vm.startPrank(SWAPPER2_ADDR);
-        vm.warp(block.timestamp + 11);
+        amm.listen();
         quoteAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
+        amm.listen();
         amm.swap(suint256(0), suint256(5000 * WAD));
 
         amm.listen();
-        vm.warp(block.timestamp + 11);
         assertGt(priceT0, amm.getPrice());
 
         vm.stopPrank();
@@ -131,15 +126,16 @@ contract ViolinAMMTest is Test {
     function test_PriceReveal() public {
         // Shouldn't see price when 1 LINK = 20 USDC
         vm.expectRevert();
-        amm.getPriceGated();
+        amm.getPrice();
 
         // Should see price when 1 LINK = 31 USDC after this swap
         vm.startPrank(SWAPPER1_ADDR);
-        vm.warp(block.timestamp + 11);
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
+        amm.listen();
         amm.swap(suint256(50000 * WAD), suint256(0));
         vm.stopPrank();
-        amm.getPriceGated();
+        amm.listen();
+        amm.getPrice();
     }
 
     /*
@@ -148,17 +144,11 @@ contract ViolinAMMTest is Test {
      */
     function test_SwapTiming() public {
         vm.startPrank(SWAPPER1_ADDR);
-
+        amm.listen();
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
-
-        // Immediately attempt another swap
-        // Should revert due to timing restriction
-        vm.expectRevert("Must wait 10 seconds before calling swap");
-        amm.swap(suint256(50000 * WAD), suint256(0));
-
-        // Wait 10 seconds and try again
-        vm.warp(block.timestamp + 11);
-        amm.swap(suint256(50000 * WAD), suint256(0));
+        amm.swap(suint256(5000 * WAD), suint256(0));
+        vm.expectRevert();
+        amm.swap(suint256(5000 * WAD), suint256(0));
         vm.stopPrank();
     }
 
@@ -176,16 +166,16 @@ contract ViolinAMMTest is Test {
         // Unauthorized call to getPriceGated should revert
         vm.startPrank(NON_LISTENER_ADDR);
         vm.expectRevert();
-        amm.getPriceGated();
+        amm.getPrice();
         vm.stopPrank();
 
         // After the address gains listener status, they can call swap
         vm.startPrank(NON_LISTENER_ADDR);
-        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.listen();
-        vm.warp(block.timestamp + 11);
+        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(50000 * WAD), suint256(0));
-        amm.getPriceGated();
+        amm.listen();
+        amm.getPrice();
         vm.stopPrank();
     }
 
@@ -196,22 +186,18 @@ contract ViolinAMMTest is Test {
     function test_ZeroSwap() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
-        vm.warp(block.timestamp + 11);
         uint256 priceT0 = amm.getPrice();
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.listen();
-        vm.warp(block.timestamp + 11);
         amm.swap(suint256(0), suint256(0));
         vm.stopPrank();
 
         vm.startPrank(SWAPPER2_ADDR);
         amm.listen();
-        vm.warp(block.timestamp + 11);
         quoteAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(0), suint256(0));
 
         amm.listen();
-        vm.warp(block.timestamp + 11);
         assertEq(priceT0, amm.getPrice());
         vm.stopPrank();
     }
@@ -223,6 +209,7 @@ contract ViolinAMMTest is Test {
      */
     function test_LiquidityInvariance() public {
         vm.startPrank(address(this));
+        amm.listen();
         uint256 baseBefore = baseAsset.balanceOf();
         uint256 quoteBefore = quoteAsset.balanceOf();
 
@@ -231,7 +218,7 @@ contract ViolinAMMTest is Test {
 
         // Have two different listeners perform swaps
         vm.startPrank(SWAPPER1_ADDR);
-        vm.warp(block.timestamp + 11);
+        amm.listen();
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(500 * WAD), suint256(0));
         vm.stopPrank();
@@ -242,16 +229,18 @@ contract ViolinAMMTest is Test {
         uint256 invariantAfterSwp1 = baseAfterSwp1 * quoteAfterSwp1;
 
         vm.startPrank(SWAPPER2_ADDR);
-        vm.warp(block.timestamp + 11);
+        amm.listen();
         baseAsset.approve(saddress(address(amm)), suint256(20000 * WAD));
         amm.swap(suint256(200 * WAD), suint256(0));
         vm.stopPrank();
 
         vm.startPrank(address(this));
+        amm.listen();
         uint256 baseAfterSwp2 = baseAsset.balanceOf();
         uint256 quoteAfterSwp2 = quoteAsset.balanceOf();
         uint256 invariantAfterSwp2 = baseAfterSwp2 * quoteAfterSwp2;
         vm.stopPrank();
+
         // Allow a small tolerance for rounding error.
         assertApproxEqRel(invariantBefore, invariantAfterSwp1, 1e16);
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
@@ -265,9 +254,9 @@ contract ViolinAMMTest is Test {
     function test_ListenedOnce() public {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
-        vm.warp(block.timestamp + 11);
         amm.getPrice();
-        vm.expectRevert();
+
+        amm.listen();
         amm.getPrice();
         vm.stopPrank();
     }
