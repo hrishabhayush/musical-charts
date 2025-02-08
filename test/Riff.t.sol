@@ -42,8 +42,8 @@ contract ViolinAMMTest is Test {
         baseAsset = new ViolinCoin(address(this), "Circle", "USDC", 18);
         quoteAsset = new ViolinCoin(address(this), "Chainlink", "LINK", 18);
 
-        // Start with pool price 1 LINK = 25 USDC
-        amm = new Riff(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
+        // Start with pool price 1 LINK = 20 USDC
+        amm = new Riff(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, testAdmin);
         baseAsset.mint(saddress(address(this)), suint256(200000 * WAD));
         quoteAsset.mint(saddress(address(this)), suint256(10000 * WAD));
         baseAsset.approve(saddress(address(amm)), suint256(200000 * WAD));

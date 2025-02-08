@@ -31,9 +31,6 @@ contract Riff is ReentrancyGuard {
     // Fixed point arithmetic unit
     suint256 wad;
 
-    // Price reveal threshold
-    suint256 priceReveal;
-
     // Since the reserves are encrypted, people can't access
     // the price information until they swap
     suint256 baseReserve;
@@ -72,13 +69,7 @@ contract Riff is ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(
-        ViolinCoin _baseAsset,
-        ViolinCoin _quoteAsset,
-        uint256 _wad,
-        uint256 _priceReveal,
-        address _adminAddress
-    ) {
+    constructor(ViolinCoin _baseAsset, ViolinCoin _quoteAsset, uint256 _wad, address _adminAddress) {
         baseAsset = _baseAsset;
         quoteAsset = _quoteAsset;
 
@@ -87,7 +78,6 @@ contract Riff is ReentrancyGuard {
         // Stored as suint256 for convenience. Not actually shielded bc it's a
         // transparent parameter in the constructor
         wad = suint256(_wad);
-        priceReveal = suint256(_priceReveal);
     }
     /*//////////////////////////////////////////////////////////////
                             AMM LOGIC

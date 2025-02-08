@@ -19,7 +19,7 @@ contract ViolinAMMScript is Script {
     function run() public {
         vm.startBroadcast();
         address admin = address(0x14dC79964da2C08b23698B3D3cc7Ca32193d9955);
-        amm = new Riff(baseAsset, quoteAsset, 1e18, 1e18, admin);
+        amm = new Riff(baseAsset, quoteAsset, 1e18, admin);
         vm.stopBroadcast();
     }
 }
