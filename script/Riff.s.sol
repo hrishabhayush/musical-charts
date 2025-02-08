@@ -5,7 +5,7 @@ import {Script, console} from "lib/forge-std/src/Script.sol";
 import {Riff} from "../src/Riff.sol";
 import {ViolinCoin} from "../src/ViolinCoin.sol";
 
-contract ViolinAMMScript is Script {
+contract RiffScript is Script {
     Riff public amm;
     ViolinCoin public baseAsset;
     ViolinCoin public quoteAsset;
