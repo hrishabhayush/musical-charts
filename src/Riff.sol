@@ -147,7 +147,8 @@ contract Riff is ReentrancyGuard {
     /*
      * Returns price of quote asset.
      */
-    function getPrice() external view onlyViolinListener returns (uint256 price) {
+    function getPrice() external onlyViolinListener returns (uint256 price) {
+        hasListened[saddress(msg.sender)] = sbool(false);
         return uint256(_computePrice());
     }
 

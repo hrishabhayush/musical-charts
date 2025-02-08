@@ -120,25 +120,6 @@ contract ViolinAMMTest is Test {
     }
 
     /*
-     * Test case for revealing price. If the price is not above the threshold,
-     * getPriceGated should revert.
-     */
-    function test_PriceReveal() public {
-        // Shouldn't see price when 1 LINK = 20 USDC
-        vm.expectRevert();
-        amm.getPrice();
-
-        // Should see price when 1 LINK = 31 USDC after this swap
-        vm.startPrank(SWAPPER1_ADDR);
-        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
-        amm.listen();
-        amm.swap(suint256(50000 * WAD), suint256(0));
-        vm.stopPrank();
-        amm.listen();
-        amm.getPrice();
-    }
-
-    /*
      * Test case for swap timing. If the user attempts to swap too quickly,
      * the swap should revert.
      */
@@ -154,7 +135,7 @@ contract ViolinAMMTest is Test {
 
     /*
      * Test case for access control. If the user is not a listener, they should
-     * not be able to call swap or getPriceGated.
+     * not be able to call swap or getPrice.
      */
     function test_Access() public {
         // Non-listener should not be able to call swap
@@ -255,8 +236,7 @@ contract ViolinAMMTest is Test {
         vm.startPrank(SWAPPER1_ADDR);
         amm.listen();
         amm.getPrice();
-
-        amm.listen();
+        vm.expectRevert();
         amm.getPrice();
         vm.stopPrank();
     }
