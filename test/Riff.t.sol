@@ -21,7 +21,7 @@ contract ViolinAMMTest is Test {
     //////////////////////////////////////////////////////////////*/
     ViolinCoin baseAsset;
     ViolinCoin quoteAsset;
-    
+
     /*//////////////////////////////////////////////////////////////
     //                        AMM STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -228,7 +228,7 @@ contract ViolinAMMTest is Test {
 
         uint256 invariantBefore = baseBefore * quoteBefore;
         vm.stopPrank();
-        
+
         // Have two different listeners perform swaps
         vm.startPrank(SWAPPER1_ADDR);
         vm.warp(block.timestamp + 11);

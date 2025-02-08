@@ -28,14 +28,16 @@ contract Riff is ReentrancyGuard {
     //////////////////////////////////////////////////////////////*/
     saddress adminAddress;
 
+    // Fixed point arithmetic unit
     suint256 wad;
+
+    // Price reveal threshold   
     suint256 priceReveal;
 
-    // Since the reserves are encrypted, people can't access 
+    // Since the reserves are encrypted, people can't access
     // the price information until they swap
     suint256 baseReserve;
     suint256 quoteReserve;
-
 
     mapping(saddress => sbool) hasListened;
     mapping(saddress => suint256) lastListenedTimestamp;
@@ -43,7 +45,7 @@ contract Riff is ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
     //                        EVENTS
     //////////////////////////////////////////////////////////////*/
-   
+
     // Listening event should be an encrypted event
     /// @notice Emitted when a user puts a request to listen
     event Listening(address indexed user);
@@ -159,7 +161,7 @@ contract Riff is ReentrancyGuard {
     }
 
     /*
-     * Bypasses priceReveal threshold. For testing purposes.
+     * Returns price of quote asset. Bypasses priceReveal threshold.
      */
     function getPrice() external onlyViolinListener returns (uint256 price) {
         hasListened[saddress(msg.sender)] = sbool(false);
