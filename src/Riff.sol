@@ -16,7 +16,7 @@ import "./ViolinCoin.sol";
 //                         ViolinAMM Contract
 //////////////////////////////////////////////////////////////*/
 
-contract ViolinAMM is ReentrancyGuard {
+contract Riff is ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
     //                        TOKEN STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -31,6 +31,8 @@ contract ViolinAMM is ReentrancyGuard {
     suint256 wad;
     suint256 priceReveal;
 
+    // Since the reserves are encrypted, people can't access 
+    // the price information until they swap
     suint256 baseReserve;
     suint256 quoteReserve;
 
@@ -188,23 +190,5 @@ contract ViolinAMM is ReentrancyGuard {
     modifier requirePriceSufficient() {
         require(_computePrice() >= priceReveal, "Price of quote asset is not high enough.");
         _;
-    }
-
-    /*//////////////////////////////////////////////////////////////
-    //                        GETTERS
-    //////////////////////////////////////////////////////////////*/
-
-    /*
-     * Get the base reserve
-     */
-    function getBaseReserve() external view returns (uint256) {
-        return uint256(baseReserve);
-    }
-
-    /*
-     * Get the quote reserve
-     */
-    function getQuoteReserve() external view returns (uint256) {
-        return uint256(quoteReserve);
     }
 }

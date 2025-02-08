@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "lib/solmate/src/tokens/ERC20.sol";
 import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
 
-import "../src/ViolinAMM.sol";
+import "../src/Riff.sol";
 import {Test, console} from "lib/forge-std/src/Test.sol";
 
 /*//////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@ contract ViolinAMMTest is Test {
     /*//////////////////////////////////////////////////////////////
     //                        AMM STORAGE
     //////////////////////////////////////////////////////////////*/
-    ViolinAMM public amm;
+    Riff public amm;
 
     /*//////////////////////////////////////////////////////////////
     //                        TOKEN STORAGE
@@ -43,7 +43,7 @@ contract ViolinAMMTest is Test {
         quoteAsset = new ViolinCoin(address(this), "Chainlink", "LINK", 18);
 
         // Start with pool price 1 LINK = 25 USDC
-        amm = new ViolinAMM(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
+        amm = new Riff(ViolinCoin(address(baseAsset)), ViolinCoin(address(quoteAsset)), WAD, 25 * WAD, testAdmin);
         baseAsset.mint(saddress(address(this)), suint256(200000 * WAD));
         quoteAsset.mint(saddress(address(this)), suint256(10000 * WAD));
         baseAsset.approve(saddress(address(amm)), suint256(200000 * WAD));
@@ -222,11 +222,13 @@ contract ViolinAMMTest is Test {
      * error.
      */
     function test_LiquidityInvariance() public {
-        uint256 baseBefore = amm.getBaseReserve();
-        uint256 quoteBefore = amm.getQuoteReserve();
+        vm.startPrank(address(this));
+        uint256 baseBefore = baseAsset.balanceOf();
+        uint256 quoteBefore = quoteAsset.balanceOf();
 
         uint256 invariantBefore = baseBefore * quoteBefore;
-
+        vm.stopPrank();
+        
         // Have two different listeners perform swaps
         vm.startPrank(SWAPPER1_ADDR);
         vm.warp(block.timestamp + 11);
@@ -234,8 +236,8 @@ contract ViolinAMMTest is Test {
         amm.swap(suint256(500 * WAD), suint256(0));
         vm.stopPrank();
 
-        uint256 baseAfterSwp1 = amm.getBaseReserve();
-        uint256 quoteAfterSwp1 = amm.getQuoteReserve();
+        uint256 baseAfterSwp1 = baseAsset.balanceOf();
+        uint256 quoteAfterSwp1 = quoteAsset.balanceOf();
 
         uint256 invariantAfterSwp1 = baseAfterSwp1 * quoteAfterSwp1;
 
@@ -245,12 +247,15 @@ contract ViolinAMMTest is Test {
         amm.swap(suint256(200 * WAD), suint256(0));
         vm.stopPrank();
 
-        uint256 baseAfterSwp2 = amm.getBaseReserve();
-        uint256 quoteAfterSwp2 = amm.getQuoteReserve();
+        vm.startPrank(address(this));
+        uint256 baseAfterSwp2 = baseAsset.balanceOf();
+        uint256 quoteAfterSwp2 = quoteAsset.balanceOf();
         uint256 invariantAfterSwp2 = baseAfterSwp2 * quoteAfterSwp2;
+        vm.stopPrank();
         // Allow a small tolerance for rounding error.
         assertApproxEqRel(invariantBefore, invariantAfterSwp1, 1e16);
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
+        vm.stopPrank();
     }
 
     /*
