@@ -3,8 +3,8 @@ pragma solidity ^0.8.13;
 
 import "solmate/tokens/ERC20.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
+import {Riff, ViolinCoin} from "../src/Riff.sol";
 
-import "../src/Riff.sol";
 import {Test, console} from "forge-std/Test.sol";
 
 /*//////////////////////////////////////////////////////////////
