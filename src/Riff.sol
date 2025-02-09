@@ -39,13 +39,6 @@ contract Riff is ReentrancyGuard {
     suint256 quoteReserve;
 
     /*//////////////////////////////////////////////////////////////
-    //                        EVENTS
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Emitted when a swap is executed by the user
-    event SwapExecuted(address indexed user);
-
-    /*//////////////////////////////////////////////////////////////
     //                        MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
@@ -107,8 +100,6 @@ contract Riff is ReentrancyGuard {
 
         (baseOut, baseReserve, quoteReserve) = _swap(baseAsset, quoteAsset, baseReserve, quoteReserve, baseIn);
         (quoteOut, quoteReserve, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteIn);
-
-        emit SwapExecuted(msg.sender);
     }
 
     /*

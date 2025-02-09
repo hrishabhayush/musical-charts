@@ -99,33 +99,37 @@ contract ViolinAMMTest is Test {
      * Test case for price going up after swap
      */
     function test_PriceUp() public {
-        vm.startPrank(SWAPPER1_ADDR);
+        vm.startPrank(violinAddress);
         uint256 priceT0 = amm.getPrice();
         vm.stopPrank();
+
+        vm.startPrank(SWAPPER1_ADDR);
         uint256 swapperBaseT0 = baseAsset.balanceOf();
         uint256 swapperQuoteT0 = quoteAsset.balanceOf();
 
-        vm.startPrank(SWAPPER1_ADDR);
         baseAsset.approve(saddress(address(amm)), suint256(30000 * WAD));
         amm.swap(suint256(30000 * WAD), suint256(0));
         vm.stopPrank();
 
         vm.prank(violinAddress);
         uint256 priceT1 = amm.getPrice();
-        vm.stopPrank();
 
-        assertLt(priceT0, amm.getPrice());
+        assertLt(priceT0, priceT1);
 
         assertGt(swapperBaseT0, baseAsset.balanceOf());
         assertLt(swapperQuoteT0, quoteAsset.balanceOf());
+        vm.stopPrank();
     }
 
     /*
      * Test case for price going down after swap. 
      */
     function test_PriceNetDown() public {
-        vm.startPrank(SWAPPER1_ADDR);
+        vm.startPrank(violinAddress);
         uint256 priceT0 = amm.getPrice();
+        vm.stopPrank();
+
+        vm.startPrank(SWAPPER1_ADDR);
         baseAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
         amm.swap(suint256(5000 * WAD), suint256(0));
         vm.stopPrank();
@@ -133,30 +137,30 @@ contract ViolinAMMTest is Test {
         vm.startPrank(SWAPPER2_ADDR);
         quoteAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
         amm.swap(suint256(0), suint256(5000 * WAD));
+        vm.stopPrank();
 
+        vm.startPrank(violinAddress);
         assertGt(priceT0, amm.getPrice());
-
         vm.stopPrank();
     }
 
     /*
-     * Test case for swap timing. If the user attempts to swap too quickly,
-     * the swap should revert.
+     * Test case for swap timing. The user can call swap as many times as it likes
+     * the swap should not revert.
      */
     function test_SwapTiming() public {
         vm.startPrank(SWAPPER1_ADDR);
         baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
         amm.swap(suint256(5000 * WAD), suint256(0));
-        vm.expectRevert();
         amm.swap(suint256(5000 * WAD), suint256(0));
         vm.stopPrank();
     }
 
     /*
-     * Test case for access control. If the user is not a listener, they should
-     * not be able to call swap or getPrice.
+     * Test case for access control. Any user can call swap, however
+     * only the violin can call getPrice.
      */
-    function test_Access() public {
+    function test_ViolinAccess() public {
         // Non-listener should not be able to call swap
         vm.startPrank(NON_LISTENER_ADDR);
         vm.expectRevert("You are not the listener");
