@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "lib/solmate/src/tokens/ERC20.sol";
-import {MockERC20} from "lib/solmate/src/test/utils/mocks/MockERC20.sol";
+import "solmate/tokens/ERC20.sol";
+import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 
 import "../src/Riff.sol";
-import {Test, console} from "lib/forge-std/src/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 
 /*//////////////////////////////////////////////////////////////
 //                    ViolinAMMTest Contract
@@ -109,13 +109,17 @@ contract ViolinAMMTest is Test {
 
         baseAsset.approve(saddress(address(amm)), suint256(30000 * WAD));
         amm.swap(suint256(30000 * WAD), suint256(0));
+
+        uint256 swapperBaseT1 = baseAsset.balanceOf();
+        uint256 swapperQuoteT1 = quoteAsset.balanceOf();
         vm.stopPrank();
 
         vm.startPrank(violinAddress);
         assertLt(priceT0, amm.getPrice());
-        assertGt(swapperBaseT0, baseAsset.balanceOf());
-        assertLt(swapperQuoteT0, quoteAsset.balanceOf());
         vm.stopPrank();
+
+        assertGt(swapperBaseT0, swapperBaseT1);
+        assertLt(swapperQuoteT0, swapperQuoteT1);
     }
 
     /*
