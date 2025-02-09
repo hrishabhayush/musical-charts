@@ -28,6 +28,8 @@ contract Riff is ReentrancyGuard {
     //////////////////////////////////////////////////////////////*/
     saddress adminAddress;
 
+    saddress violinAddress;
+
     // Fixed point arithmetic unit
     suint256 wad;
 
@@ -35,9 +37,6 @@ contract Riff is ReentrancyGuard {
     // the price information until they swap
     suint256 baseReserve;
     suint256 quoteReserve;
-
-    mapping(saddress => sbool) hasListened;
-    mapping(saddress => suint256) lastListenedTimestamp;
 
     /*//////////////////////////////////////////////////////////////
     //                        EVENTS
@@ -51,29 +50,28 @@ contract Riff is ReentrancyGuard {
     //////////////////////////////////////////////////////////////*/
 
     /*
-     * Only listener can call this function
+     * Only off-chain violin can call this function
      */
     modifier onlyViolinListener() {
-        require(hasListened[saddress(msg.sender)], "You are not the listener");
+        require(saddress(msg.sender) == violinAddress, "You don't have violin access");
         _;
-    }
-
-    /*
-     * Listen to the music
-     */
-    function listen() external {
-        hasListened[saddress(msg.sender)] = sbool(true);
-        lastListenedTimestamp[saddress(msg.sender)] = suint256(block.timestamp);
     }
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(ViolinCoin _baseAsset, ViolinCoin _quoteAsset, uint256 _wad, address _adminAddress) {
+    constructor(
+        ViolinCoin _baseAsset,
+        ViolinCoin _quoteAsset,
+        uint256 _wad,
+        address _adminAddress,
+        address _violinAddress
+    ) {
         baseAsset = _baseAsset;
         quoteAsset = _quoteAsset;
 
         adminAddress = saddress(_adminAddress);
+        violinAddress = saddress(_violinAddress);
 
         // Stored as suint256 for convenience. Not actually shielded bc it's a
         // transparent parameter in the constructor
@@ -100,7 +98,7 @@ contract Riff is ReentrancyGuard {
      * Wrapper around swap so calldata for trade looks the same regardless of
      * direction.
      */
-    function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant onlyViolinListener {
+    function swap(suint256 baseIn, suint256 quoteIn) public nonReentrant {
         // After listening to the music, the swapper can call this function to swap the assets,
         // then the price gets revealed to the swapper
 
@@ -111,7 +109,6 @@ contract Riff is ReentrancyGuard {
         (quoteOut, quoteReserve, baseReserve) = _swap(quoteAsset, baseAsset, quoteReserve, baseReserve, quoteIn);
 
         emit SwapExecuted(msg.sender);
-        hasListened[saddress(msg.sender)] = sbool(false);
     }
 
     /*
@@ -137,8 +134,7 @@ contract Riff is ReentrancyGuard {
     /*
      * Returns price of quote asset.
      */
-    function getPrice() external onlyViolinListener returns (uint256 price) {
-        hasListened[saddress(msg.sender)] = sbool(false);
+    function getPrice() external view onlyViolinListener returns (uint256 price) {
         return uint256(_computePrice());
     }
 
