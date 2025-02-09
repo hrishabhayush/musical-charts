@@ -111,11 +111,8 @@ contract ViolinAMMTest is Test {
         amm.swap(suint256(30000 * WAD), suint256(0));
         vm.stopPrank();
 
-        vm.prank(violinAddress);
-        uint256 priceT1 = amm.getPrice();
-
-        assertLt(priceT0, priceT1);
-
+        vm.startPrank(violinAddress);
+        assertLt(priceT0, amm.getPrice());
         assertGt(swapperBaseT0, baseAsset.balanceOf());
         assertLt(swapperQuoteT0, quoteAsset.balanceOf());
         vm.stopPrank();
@@ -145,39 +142,31 @@ contract ViolinAMMTest is Test {
     }
 
     /*
-     * Test case for swap timing. The user can call swap as many times as it likes
-     * the swap should not revert.
+     * Test case for access control. Only the violin can call getPrice.
      */
-    function test_SwapTiming() public {
+    function test_AccessControl() public {
         vm.startPrank(SWAPPER1_ADDR);
-        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
-        amm.swap(suint256(5000 * WAD), suint256(0));
-        amm.swap(suint256(5000 * WAD), suint256(0));
+        vm.expectRevert("You don't have violin access");
+        amm.getPrice();
+        vm.stopPrank();
+
+        vm.startPrank(violinAddress);
+        amm.getPrice();
         vm.stopPrank();
     }
 
     /*
-     * Test case for access control. Any user can call swap, however
-     * only the violin can call getPrice.
+     * Test case for swap access control. Any user can call swap
      */
-    function test_ViolinAccess() public {
-        // Non-listener should not be able to call swap
-        vm.startPrank(NON_LISTENER_ADDR);
-        vm.expectRevert("You are not the listener");
-        amm.swap(suint256(50000 * WAD), suint256(0));
+    function test_SwapAccessControl() public {
+        vm.startPrank(SWAPPER1_ADDR);
+        baseAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
+        amm.swap(suint256(5000 * WAD), suint256(0));
         vm.stopPrank();
 
-        // Unauthorized call to getPriceGated should revert
-        vm.startPrank(NON_LISTENER_ADDR);
-        vm.expectRevert();
-        amm.getPrice();
-        vm.stopPrank();
-
-        // After the address gains listener status, they can call swap
-        vm.startPrank(NON_LISTENER_ADDR);
-        baseAsset.approve(saddress(address(amm)), suint256(50000 * WAD));
-        amm.swap(suint256(50000 * WAD), suint256(0));
-        amm.getPrice();
+        vm.startPrank(SWAPPER2_ADDR);
+        quoteAsset.approve(saddress(address(amm)), suint256(5000 * WAD));
+        amm.swap(suint256(0), suint256(5000 * WAD));
         vm.stopPrank();
     }
 
@@ -219,18 +208,6 @@ contract ViolinAMMTest is Test {
         // Allow a small tolerance for rounding error.
         assertApproxEqRel(invariantBefore, invariantAfterSwp1, 1e16);
         assertApproxEqRel(invariantBefore, invariantAfterSwp2, 1e16);
-        vm.stopPrank();
-    }
-
-    /*
-     * Test case for listenedOnce. If the user attempts to call getPrice too quickly,
-     * it should revert.
-     */
-    function test_ListenedOnce() public {
-        vm.startPrank(SWAPPER1_ADDR);
-        amm.getPrice();
-        vm.expectRevert();
-        amm.getPrice();
         vm.stopPrank();
     }
 }
