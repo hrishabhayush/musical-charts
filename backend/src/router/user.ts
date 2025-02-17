@@ -10,25 +10,30 @@ const router = Router();
 export default router;
 
 router.post("/signin", authMiddleware, async(req, res) => {
+
+    // Add signin verification logic here later and then every user will have address to it
     const { userId } = req.body; 
-    const user = await prismaClient.user.findFirst({
+    const existingUser = await prismaClient.user.findFirst({
         where: {
             id: userId
         }
     })
 
-    if (user) {
+    if (existingUser) {
         const token = jwt.sign({
-            userId: user.id
+            userId: existingUser.id
         }, JWT_SECRET)
 
         res.json({
             token
         })
     } else {
-        const createUser = await prismaClient.user.create({
+
+        // create a user on the platform
+        const user = await prismaClient.user.create({
             data: {
-                userId: userId
+                id: userId,
+                address: '0xaer1239483749kjdjkla' 
             }
         })
 
