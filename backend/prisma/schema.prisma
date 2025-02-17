@@ -14,36 +14,33 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   address   String
+  balance   Float      @default(0) // User's initial balance
   trade     Trade[]
-  authorId  Int
+  payments  Payment[]
+  createdAt DateTime   @updatedAt
 }
 
-model Profile {
-  id     Int     @id @default(autoincrement())
-  bio    String?
-  user   User    @relation(fields: [userId], references: [id])
-  userId Int     @unique
-}
-
-model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
-  posts   Post[]
-  profile Profile?
+model EncryptedToken {
+  id            Int         @id @default(autoincrement())
+  tokenSymbol   String      
+  price         String      // Encrypted format 
 }
 
 model Trade {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
-  posts   Post[]
-  profile Profile?
+  id          Int               @id @default(autoincrement())
+  user        User              @relation(fields: [userId], references: [id])
+  userId      Int
+  price       EncryptedToken    @relation(fields: [token_id], references: [id])
+  token_id    Int
+  music_url   String  // TODO: Ideally upload to AWS S3 and play as a song on the frontend
 }
 
-model TradingData {
-  trade_id  Int       @id @default(autoincrement())
-  trades    Trade[]
+model Payment {
+  id      Int       @id @default(autoincrement())
+  user    User      @relation(fields: [userId], references: [id])
+  userId  Int
+  amount  Float
+  status  String    // Completed, Pending or Failed
 }
