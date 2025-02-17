@@ -17,7 +17,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
         } else {
             res.status(403).json({
                 error: "Error while logging in"
-            })
+            });
         }
     } catch(e) {
         console.log("You're not logged in");

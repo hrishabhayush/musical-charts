@@ -26,7 +26,7 @@ router.post("/signin", authMiddleware, async(req, res) => {
 
         res.json({
             token
-        })
+        });
     } else {
 
         // create a user on the platform
