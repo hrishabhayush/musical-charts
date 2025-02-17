@@ -26,13 +26,14 @@ model EncryptedToken {
   id            Int         @id @default(autoincrement())
   tokenSymbol   String      
   price         String      // Encrypted format 
+  trade         Trade[]
 }
 
 model Trade {
   id          Int               @id @default(autoincrement())
   user        User              @relation(fields: [userId], references: [id])
   userId      Int
-  price       EncryptedToken    @relation(fields: [token_id], references: [id])
+  token       EncryptedToken    @relation(fields: [token_id], references: [id])
   token_id    Int
   music_url   String  // TODO: Ideally upload to AWS S3 and play as a song on the frontend
 }
