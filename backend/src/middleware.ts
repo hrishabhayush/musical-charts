@@ -13,15 +13,15 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
         if (decodedjwt.userId) {
             // @ts-ignore
             req.userId = decodedjwt.userId;
-            next();
+            return next();
         } else {
-            res.status(403).json({
+            return res.status(403).json({
                 error: "Error while logging in"
             });
         }
     } catch(e) {
         console.log("You're not logged in");
-        res.status(403).json({
+        return res.status(403).json({
             error: "You're not logged in"
         });
     }

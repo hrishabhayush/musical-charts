@@ -7,8 +7,6 @@ import { JWT_SECRET } from "../config";
 const prismaClient = new PrismaClient();
 const router = Router();
 
-export default router;
-
 router.post("/signin", authMiddleware, async(req, res) => {
 
     // Add signin verification logic here later and then every user will have address to it
@@ -46,3 +44,5 @@ router.post("/signin", authMiddleware, async(req, res) => {
         })
     }
 });
+
+export default router;
