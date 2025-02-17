@@ -12,6 +12,7 @@
     "seismic-viem": "^1.0.10",
     "tone": "^15.0.4",
     "typescript": "^5.7.3",
-    "viem": "latest"
+    "viem": "latest",
+    "zod": "^3.24.2"
   }
 }
