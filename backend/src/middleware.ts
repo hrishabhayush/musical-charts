@@ -15,14 +15,14 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
             req.userId = decodedjwt.userId;
             next();
         } else {
-            return res.status(403).json({
-                message: "Error while logging in"
+            res.status(403).json({
+                error: "Error while logging in"
             })
         }
     } catch(e) {
         console.log("You're not logged in");
-        return res.status(403).json({
-            message: "You're not logged in"
+        res.status(403).json({
+            error: "You're not logged in"
         });
     }
 }
