@@ -1,101 +1,81 @@
-import Image from "next/image";
+"use client"
+import React, { useState } from 'react';
+import Layout from '../../components/layout';
+import Hero from '../../components/Hero';
+import EncryptedBondingCurve from '../../components/EncryptedBondingCurve';
+import Music from '../../components/Music';
 
-export default function Home() {
+const Home: React.FC = () => {
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(50);
+  const [connected, setConnected] = useState<boolean>(false);
+  const [currentPriceMovement, setCurrentPriceMovement] = useState<'up' | 'down' | 'stable'>('stable');
+
+  const handlePlayToggle = (playing: boolean) => {
+    setIsPlaying(playing);
+  };
+
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+  };
+
+  const handleConnect = () => {
+    setConnected(true);
+  };
+
+  const handlePriceChange = (direction: 'up' | 'down' | 'stable') => {
+    setCurrentPriceMovement(direction);
+    
+    // In a full implementation, you might want to display a notification
+    // or visual indicator of the price movement
+    console.log(`Price movement detected: ${direction}`);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <Layout>
+      <Hero />
+      
+      <div className="mt-16">
+        <EncryptedBondingCurve 
+          initialAssetName="AI Violin Bond #1"
+          onConnect={handleConnect}
+          onPlayToggle={handlePlayToggle}
+          onVolumeChange={handleVolumeChange}
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      </div>
+      
+      {/* Music component handles the audio generation but doesn't display anything */}
+      <Music 
+        isPlaying={isPlaying}
+        volume={volume}
+        assetId="violin-bond-1"
+        onPriceChange={handlePriceChange}
+      />
+      
+      {/* Price movement indicator */}
+      {isPlaying && (
+        <div className="fixed bottom-4 right-4 p-3 rounded-lg bg-gray-800 shadow-lg">
+          <div className="flex items-center space-x-2">
+            <div className="text-sm">Price Movement:</div>
+            <div className={`w-3 h-3 rounded-full ${
+              currentPriceMovement === 'up' 
+                ? 'bg-green-500' 
+                : currentPriceMovement === 'down' 
+                  ? 'bg-red-500' 
+                  : 'bg-gray-500'
+            }`}></div>
+            <div className="text-sm">
+              {currentPriceMovement === 'up' 
+                ? 'Rising' 
+                : currentPriceMovement === 'down' 
+                  ? 'Falling' 
+                  : 'Stable'}
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+    </Layout>
   );
-}
+};
+
+export default Home;
