@@ -1,0 +1,72 @@
+:root {
+  --bg-color: #f0e8e6;
+  --mountain-color: #83654b;
+  --mountain-shadow: #463324;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.mountains-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  max-width: 800px;
+  max-height: 800px;
+  perspective: 1200px;
+}
+
+.mountain {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  transform-style: preserve-3d;
+  transition: transform 0.2s ease;
+}
+
+.mountain-1 {
+  top: 10%;
+  left: calc(50% - 200px);
+  transform: translateZ(50px);
+  z-index: 3;
+}
+
+.mountain-2 {
+  top: 25%;
+  left: 10%;
+  transform: translateZ(-50px);
+  z-index: 1;
+}
+
+.mountain-3 {
+  top: 25%;
+  right: 10%;
+  transform: translateZ(-30px);
+  z-index: 2;
+}
+
+.mountain img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 15px rgba(70, 51, 36, 0.2));
+}
+
+/* Smooth transition for all transforms */
+.mountain {
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}

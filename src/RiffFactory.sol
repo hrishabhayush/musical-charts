@@ -42,12 +42,17 @@ contract RiffFactory {
     }
 
     function buyRiffToken(address riffTokenAddress, suint256 quantity) public payable returns (uint) {
+        // check if memecoin is listed
         require(addressToRiffTokenMapping[riffTokenAddress].tokenAddress!=address(0), "Token is not listed on the platform");
 
-        // Find the token  
         riffToken storage listedToken = addressToRiffTokenMapping[riffTokenAddress];
+        
+        ViolinCoin violinCoinCt = ViolinCoin(riffTokenAddress);
 
         require(addressToRiffTokenMapping[riffTokenAddress].fundingRaised >= RIFFTOKEN_FUNDING_GOAL, "Token has not reached the funding goal yet");
+
+        // check to ensure there is enough supply to facilitate the purchase
+        suint256 currentSupply = suint256(violinCoinCt.totalSupply());
     }
 
 }
