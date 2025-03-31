@@ -1,4 +1,5 @@
 // src/App.tsx
+
 import React, { useState } from 'react';
 import { Music2, ArrowDown } from 'lucide-react';
 import { FloatingMountains } from './components/FloatingMountains';
@@ -50,10 +51,9 @@ function App() {
             <div className="bg-isabelline rounded-xl p-4 border border-timberwolf">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-coffee font-medium">MYSTERY</span>
+                  <span className="text-coffee font-medium">RIFF</span>
                 </div>
               </div>
-              <div className="text-2xl font-medium text-coyote mt-2">***.**</div>
             </div>
           </div>
 
@@ -73,7 +73,7 @@ function App() {
                 <audio
                   controls
                   className="w-full"
-                  src="https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav"
+                  src="/sample.wav" 
                 >
                   Your browser does not support the audio element.
                 </audio>
