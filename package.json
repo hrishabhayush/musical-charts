@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@magenta/music": "^1.23.1",
+    "@openzeppelin/contracts": "^5.2.0",
     "dotenv": "latest",
     "seismic-viem": "^1.0.10",
     "tone": "^15.0.4",
