@@ -6,9 +6,9 @@
  */
 pragma solidity ^0.8.13;
 
-import "lib/solmate/src/tokens/ERC20.sol";
-import "lib/solmate/src/utils/FixedPointMathLib.sol";
-import "lib/solmate/src/utils/ReentrancyGuard.sol";
+import "../lib/solmate/src/tokens/ERC20.sol";
+import "../lib/solmate/src/utils/FixedPointMathLib.sol";
+import "../lib/solmate/src/utils/ReentrancyGuard.sol";
 
 import "./ViolinCoin.sol";
 

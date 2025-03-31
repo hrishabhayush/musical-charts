@@ -29,7 +29,7 @@
 //     suint256 tokenCount;
 
 //     /*
-//      * Create a riff token with name, ticker, and image. 
+//      * Create a riff token with name, ticker, and image.
 //      */
 //     function createRiffToken(string memory name, string memory ticker, string memory imageUrl) public payable returns(address) {
 //         require(msg.value >= RIFFTOKEN_CREATION_FEE, "Invalid token creation fee");
@@ -46,7 +46,7 @@
 //         require(addressToRiffTokenMapping[riffTokenAddress].tokenAddress!=address(0), "Token is not listed on the platform");
 
 //         riffToken storage listedToken = addressToRiffTokenMapping[riffTokenAddress];
-        
+
 //         ViolinCoin violinCoinCt = ViolinCoin(riffTokenAddress);
 
 //         require(addressToRiffTokenMapping[riffTokenAddress].fundingRaised >= RIFFTOKEN_FUNDING_GOAL, "Token has not reached the funding goal yet");
