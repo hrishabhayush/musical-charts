@@ -1,8 +1,8 @@
 // src/App.tsx
-
 import React, { useState } from 'react';
 import { Music2, ArrowDown } from 'lucide-react';
 import { FloatingMountains } from './components/FloatingMountains';
+import sampleAudio from '../../public/sample.wav';
 
 function App() {
   const [usdcAmount, setUsdcAmount] = useState<string>('');
@@ -73,7 +73,7 @@ function App() {
                 <audio
                   controls
                   className="w-full"
-                  src="/sample.wav" 
+                  src={sampleAudio}
                 >
                   Your browser does not support the audio element.
                 </audio>
