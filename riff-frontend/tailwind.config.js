@@ -3,6 +3,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        'arial': ['Arial', 'Helvetica', 'sans-serif'],
+      },
       colors: {
         isabelline: '#F2EFEEff',
         coffee: '#634C38ff',

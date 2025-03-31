@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useState } from 'react';
 import { Music2, ArrowDown } from 'lucide-react';
 import { FloatingMountains } from './components/FloatingMountains';
@@ -14,7 +15,7 @@ function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-isabelline via-timberwolf to-timberwolf-2 flex items-center justify-center p-4 overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-isabelline via-timberwolf to-timberwolf-2 flex items-center justify-center p-4 overflow-hidden font-arial">
       <FloatingMountains />
       <div className="relative z-50 bg-white/80 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-timberwolf-2 shadow-lg">
         <div className="space-y-6">
@@ -24,10 +25,6 @@ function App() {
             <div className="bg-isabelline rounded-xl p-4 border border-timberwolf">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {/* <div className="bg-coffee p-2 rounded-full">
-                    <Coins className="w-5 h-5 text-isabelline" />
-                  </div> */}
-                  {/* TODO: Add a div that holds the image of the token for now hardcode it but it should be fetching it from somewhere. */}
                   <span className="text-coffee font-medium">USDC</span>
                 </div>
               </div>
@@ -53,10 +50,6 @@ function App() {
             <div className="bg-isabelline rounded-xl p-4 border border-timberwolf">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {/* <div className="bg-coyote p-2 rounded-full">
-                    <Coins className="w-5 h-5 text-isabelline" />
-                  </div> */}
-                  {/* TODO: Add a div that holds the image of the token for now hardcode it but it should be fetching it from somewhere. */}
                   <span className="text-coffee font-medium">MYSTERY</span>
                 </div>
               </div>
