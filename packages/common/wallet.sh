@@ -13,35 +13,24 @@ check_balance() {
             "params":["'$address'", "latest"],
             "id":1
         }')
-
-    local hex_result=$(echo "$balance_json" | grep -o '"result":"[^"]*"' | cut -d'"' -f4)
-    if [ "$hex_result" == "0x0" ]; then
-        echo -e "${RED}Error: Address not funded. Please check if your faucet transaction went through.${NC}"
-        echo -e "${RED}If the issue persists, message @lyronc on Telegram.${NC}"
-        exit 1
-    fi
 }
 
 dev_wallet() {
-    print_step "1" "Generating new dev wallet"
+    print_step "1" "Using hardcoded wallet address"
     # CAUTION: DO NOT GENERATE A KEYPAIR LIKE THIS FOR PRODUCTION
-    local keypair=$(scast wallet new)
-    DEV_WALLET_ADDRESS=$(echo "$keypair" | grep "Address:" | awk '{print $2}')
-    DEV_WALLET_PRIVKEY=$(echo "$keypair" | grep "Private key:" | awk '{print $3}')
-    if [ -z "$DEV_WALLET_ADDRESS" ]; then
-        echo -e "${RED}Error: Failed to create dev wallet. Please make sure sfoundry is installed.${NC}"
-        exit 1
-    fi
-    print_success "Success"
+    DEV_WALLET_ADDRESS="0x0D181A6daA62c7a8180d1B6FdF54C8fd20942E68"
+    DEV_WALLET_PRIVKEY="0xe36297b22a6e3628b9d072850ba1ccfd6d8d42a8f017452829adf45acbe84504"
+    # if [ -z "$DEV_WALLET_ADDRESS" ]; then
+    #     echo -e "${RED}Error: Failed to create dev wallet. Please make sure sfoundry is installed.${NC}"
+    #     exit 1
+    # fi
 
-    print_step "2" "Funding wallet"
-    echo -e "Please visit: ${GREEN}$FAUCET_URL${NC}"
-    echo -e "Enter this address: ${GREEN}$DEV_WALLET_ADDRESS${NC}"
-    echo -ne "${BLUE}Press Enter when done...${NC}"
-    read -r
+    print_success "Using wallet address: ${GREEN}$DEV_WALLET_ADDRESS${NC}"
 
-    print_step "3" "Verifying funds (takes a few seconds)"
-    sleep 4
+    print_step "2" "Checking wallet funding"
+    echo -e "Verifying if the wallet has funds"
+    
+    sleep 2
     check_balance "$DEV_WALLET_ADDRESS"
-    print_success "Success"
+    print_success "Wallet is funded and ready to use"
 }

@@ -1,12 +1,11 @@
 // src/App.tsx
 import React, { useState } from 'react';
-import { Music2, ArrowDown } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { FloatingMountains } from './components/FloatingMountains';
-import sampleAudio from '../../public/sample.wav';
+import MusicGenerator from './components/MusicGenerator';
 
 function App() {
   const [usdcAmount, setUsdcAmount] = useState<string>('');
-  const [showAudio, setShowAudio] = useState(false);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -57,33 +56,8 @@ function App() {
             </div>
           </div>
 
-          {/* Listen to Charts Button */}
-          <button
-            onClick={() => setShowAudio(true)}
-            className="w-full bg-coffee hover:bg-coyote transition-colors text-isabelline font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md"
-          >
-            <Music2 className="w-5 h-5" />
-            Listen to the Charts
-          </button>
-
-          {/* Audio Player and Trade Button */}
-          {showAudio && (
-            <div className="space-y-4">
-              <div className="bg-isabelline rounded-xl p-4 border border-timberwolf">
-                <audio
-                  controls
-                  className="w-full"
-                  src={sampleAudio}
-                >
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-              
-              <button className="w-full bg-coyote hover:bg-coffee transition-colors text-isabelline font-medium py-3 px-4 rounded-xl shadow-md">
-                Trade Now
-              </button>
-            </div>
-          )}
+          {/* Music Generator */}
+          <MusicGenerator />
         </div>
       </div>
     </div>
