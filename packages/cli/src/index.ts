@@ -4,7 +4,7 @@ import {
   getShieldedContract,
   seismicDevnet,
 } from 'seismic-viem'
-import { http } from 'viem'
+import { http, getContract } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
 import { CONTRACT_DIR, CONTRACT_NAME } from '../lib/constants.js'
@@ -16,6 +16,36 @@ import {
 } from '../lib/utils.js'
 import { base } from 'viem/chains'
 import { parseUnits } from 'viem'
+
+const ABI = [
+  {
+    name: 'addLiquidity',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'baseAmount', type: 'uint256' },
+      { name: 'quoteAmount', type: 'uint256' }
+    ],
+    outputs: []
+  },
+  {
+    name: 'swap',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'baseIn', type: 'uint256' },
+      { name: 'quoteIn', type: 'uint256' }
+    ],
+    outputs: [{ type: 'uint256' }]
+  },
+  {
+    name: 'getPrice',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'uint256' }]
+  }
+] as const;
 
 /*
  * Add liquidity to the AMM pool
@@ -85,29 +115,146 @@ async function getPrice(step: number, contract: any) {
 async function main() {
   const [rpcUrl, explorerUrl, contractAddr, privkey] = process.argv.slice(2)
 
-  const abi = await readAbi(CONTRACT_DIR, CONTRACT_NAME)
   const walletClient = await createShieldedWalletClient({
     chain: seismicDevnet,
     transport: http(rpcUrl),
     account: privateKeyToAccount(privkey as `0x${string}`),
   })
   const contract = getShieldedContract({
-    abi: abi,
+    abi: ABI,
     address: contractAddr as `0x${string}`,
     client: walletClient,
   })
 
-  // Commenting out state-changing operations to avoid arithmetic overflow/underflow errors
-  // await addLiquidity(1, explorerUrl, contract, walletClient, abi, 100, 200);
-  // await swap(2, explorerUrl, contract, walletClient, abi, 10, 0);
-  
-  // Only attempt to read price directly without any prior operations
-  await getPrice(1, contract);
+  console.log(chalk.blue('\n=== Testing Riff AMM Contract ==='));
+  console.log('Wallet Address:', walletClient.account.address);
+  console.log('Contract Address:', contractAddr);
 
-  await addLiquidity(1, explorerUrl, contract, walletClient, abi, 1e8, 1e8);
-  
-  console.log('\n')
-  printSuccess('Success. You just interacted with your Riff AMM contract!')
+  // Step 1: Approve tokens for the contract
+  try {
+    console.log(chalk.blue('\nStep 1: Approving tokens'));
+    const baseAmount = BigInt(1e18); // 1 RIFF
+    const quoteAmount = BigInt(1e18); // 1 USDC
+    
+    // Get base and quote token addresses from the contract
+    const baseToken = await contract.read.baseAsset();
+    const quoteToken = await contract.read.quoteAsset();
+    
+    console.log('Token addresses:', {
+      baseToken,
+      quoteToken,
+    });
+
+    // Approve base token
+    const baseTokenContract = getContract({
+      abi: [
+        {
+          name: 'approve',
+          type: 'function',
+          stateMutability: 'nonpayable',
+          inputs: [
+            { name: 'spender', type: 'address' },
+            { name: 'amount', type: 'uint256' }
+          ],
+          outputs: [{ type: 'bool' }]
+        }
+      ],
+      address: baseToken as `0x${string}`,
+      client: walletClient,
+    });
+    
+    const baseTxHash = await baseTokenContract.write.approve([contractAddr as `0x${string}`, baseAmount]);
+    
+    console.log(chalk.green('Base Token Approval Hash:', baseTxHash));
+    await walletClient.waitForTransactionReceipt({ hash: baseTxHash });
+    console.log(chalk.green('Base token approved!'));
+
+    // Approve quote token
+    const quoteTokenContract = getContract({
+      abi: [
+        {
+          name: 'approve',
+          type: 'function',
+          stateMutability: 'nonpayable',
+          inputs: [
+            { name: 'spender', type: 'address' },
+            { name: 'amount', type: 'uint256' }
+          ],
+          outputs: [{ type: 'bool' }]
+        }
+      ],
+      address: quoteToken as `0x${string}`,
+      client: walletClient,
+    });
+    
+    const quoteTxHash = await quoteTokenContract.write.approve([contractAddr as `0x${string}`, quoteAmount]);
+    
+    console.log(chalk.green('Quote Token Approval Hash:', quoteTxHash));
+    await walletClient.waitForTransactionReceipt({ hash: quoteTxHash });
+    console.log(chalk.green('Quote token approved!'));
+  } catch (error) {
+    console.error(chalk.red('Error approving tokens:', error));
+    return; // Exit if approvals fail
+  }
+
+  // Step 2: Add liquidity
+  try {
+    console.log(chalk.blue('\nStep 2: Adding initial liquidity'));
+    const baseAmount = BigInt(1e18); // 1 RIFF
+    const quoteAmount = BigInt(1e18); // 1 USDC
+    console.log('Adding liquidity:', {
+      baseAmount: baseAmount.toString(),
+      quoteAmount: quoteAmount.toString()
+    });
+    
+    const { plaintextTx, shieldedTx, txHash } = await contract.dwrite.addLiquidity([
+      baseAmount,
+      quoteAmount,
+    ]);
+    
+    console.log(chalk.green('Transaction Hash:', txHash));
+    await walletClient.waitForTransactionReceipt({ hash: txHash });
+    console.log(chalk.green('Liquidity added successfully!'));
+  } catch (error) {
+    console.error(chalk.red('Error adding liquidity:', error));
+    return; // Exit if liquidity addition fails
+  }
+
+  // Step 3: Get initial price
+  try {
+    console.log(chalk.blue('\nStep 3: Getting initial price'));
+    const initialPrice = await contract.read.getPrice() as bigint;
+    console.log(chalk.green('Initial Price:', initialPrice.toString()));
+  } catch (error) {
+    console.error(chalk.red('Error getting initial price:', error));
+  }
+
+  // Step 4: Try a small swap (1 USDC to RIFF)
+  try {
+    console.log(chalk.blue('\nStep 4: Testing USDC to RIFF swap'));
+    const amount = BigInt(1e18); // 1 USDC
+    console.log('Amount:', amount.toString());
+    
+    const { plaintextTx, shieldedTx, txHash } = await contract.dwrite.swap([BigInt(0), amount]);
+    console.log(chalk.green('Transaction Hash:', txHash));
+    
+    await walletClient.waitForTransactionReceipt({ hash: txHash });
+    console.log(chalk.green('Transaction confirmed!'));
+  } catch (error) {
+    console.error(chalk.red('Error during swap:', error));
+  }
+
+  // Step 5: Get final price
+  try {
+    console.log(chalk.blue('\nStep 5: Getting final price'));
+    const finalPrice = await contract.read.getPrice() as bigint;
+    console.log(chalk.green('Final Price:', finalPrice.toString()));
+  } catch (error) {
+    console.error(chalk.red('Error getting final price:', error));
+  }
+
+  console.log('\n');
+  printSuccess('Testing completed!');
 }
 
 main()
