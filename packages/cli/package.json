@@ -7,7 +7,7 @@
     },
     "dependencies": {
       "chalk": "^5.4.1",
-      "seismic-viem": "^1.0.34"
+      "seismic-viem": "^1.0.37"
     },
     "devDependencies": {
       "@types/node": "^22.13.11",

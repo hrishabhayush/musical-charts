@@ -1,121 +1,226 @@
 import React, { useState, useEffect } from "react";
 import * as Tone from "tone";
-import { Music2 } from "lucide-react";
-import { ethers } from 'ethers';  
+import { Music2, Quote } from "lucide-react";
+import { ethers } from "ethers";
+import { createShieldedWalletClient, getShieldedContract, seismicDevnet } from "seismic-viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { http } from "viem";
 
-interface MusicGeneratorProps {
-  setCurrentPrice: (price: number) => void;
-  setPriceChange: (change: number) => void;
-}
-
-const MusicGenerator: React.FC<MusicGeneratorProps> = ({ setCurrentPrice, setPriceChange }) => {
-  const [showAudio, setShowAudio] = useState(false);
+const MusicGenerator: React.FC = () => {
   const [previousPrice, setPreviousPrice] = useState<number | null>(null);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [priceChange, setPriceChange] = useState<number>(0);
+  const [riffBalance, setRiffBalance] = useState<number>(0);
   const [usdcBalance, setUsdcBalance] = useState<number>(0);
+  const [swapAmount, setSwapAmount] = useState<string>(""); // Amount to swap
+  const [isUsdcToRiff, setIsUsdcToRiff] = useState(true); // Direction of swap
 
   // Contract details
-  const RIFF_AMM_ADDRESS = "0x166fECf590d20Bd7Df523a8B55b074e3db1d38C3";
+  const RIFF_AMM_ADDRESS = "0xA708f04ead68EB183E6af05c4CFC5F6019a48eAF";
+  const QUOTE_TOKEN_ADDRESS = "0xB3f387955B64D930f76DD5e8502EbEBd015Bd1a6";
+  const VIOLIN_PRIVATE_KEY = "0xe36297b22a6e3628b9d072850ba1ccfd6d8d42a8f017452829adf45acbe84504";
+  const RPC_URL = "https://node-2.seismicdev.net/rpc";
   const ABI = [
-    "function getSpotPrice() external view returns (uint256)",
-    "function buyExactBase(uint256 baseAmount) external returns (uint256)",
-    "function sellExactBase(uint256 baseAmount) external returns (uint256)"
-  ];
-  const VIOLIN_PRIVATE_KEY="0xe36297b22a6e3628b9d072850ba1ccfd6d8d42a8f017452829adf45acbe84504"
+    {
+      name: "getPrice",
+      type: "function",
+      stateMutability: "view",
+      inputs: [],
+      outputs: [{ type: "uint256" }],
+    },
+    {
+      name: "swap",
+      type: "function",
+      stateMutability: "nonpayable",
+      inputs: [
+        { name: "baseIn", type: "uint256" },
+        { name: "quoteIn", type: "uint256" },
+      ],
+      outputs: [],
+    },
+    {
+      name: "balanceOf",
+      type: "function",
+      stateMutatability: "view",
+      inputs: [],
+      outputs: [{ type: "uint256" }],
+    },
+    {
+      name: "addLiquidity", 
+      type: "function",
+      stateMutability: "nonpayable",
+      inputs: [
+        { name: "baseAmount", type: "uint256" },
+        { name: "quoteAmount", type: "uint256"},
+      ],
+      outputs: [],
+    }
+  ] as const;
 
-  // Function to fetch the current token price
+  const addLiquidity = async () => {
+    try {
+      console.log('\n==== Adding initial liquidity ===');
+
+      const walletClient = await createShieldedWalletClient({
+        chain: seismicDevnet,
+        transport: http(RPC_URL),
+        account: privateKeyToAccount(VIOLIN_PRIVATE_KEY),
+      })
+
+      const riffContract = getShieldedContract({
+        address: RIFF_AMM_ADDRESS as `0x${string}`,
+        client: walletClient,
+        abi: ABI,
+      })
+
+      const baseAmount = BigInt(1e18); // 1 RIFF
+      const quoteAmount = BigInt(1e20); // 20 USDC
+
+      console.log('Adding liquidity:', {
+        baseAmount: baseAmount.toString(),
+        quoteAmount: quoteAmount.toString()
+      });
+      
+      const tx = await riffContract.dwrite.addLiquidity([baseAmount, quoteAmount]);
+      console.log('Transaction Hash:', tx);
+      console.log('=== Liquidity successfully added');
+    } catch (error) {
+      console.error('error adding liqudity', error);
+    }
+  }
+  // Fetch token price
   const fetchTokenPrice = async (): Promise<number> => {
     try {
-      const provider = new ethers.JsonRpcProvider("https://node-2.seismicdev.net/rpc");
-      const contract = new ethers.Contract(RIFF_AMM_ADDRESS, ABI, provider);
+      const walletClient = await createShieldedWalletClient({
+        chain: seismicDevnet,
+        transport: http(RPC_URL),
+        account: privateKeyToAccount(VIOLIN_PRIVATE_KEY),
+      });
 
-      const price = await contract.getSpotPrice();
-      const formattedPrice = parseFloat(ethers.formatUnits(price, 18));
-      
-      // Update current price in parent component
+      const riffContract = getShieldedContract({
+        address: RIFF_AMM_ADDRESS as `0x${string}`,
+        client: walletClient,
+        abi: ABI,
+      });
+
+      const currentPrice = await riffContract.read.getPrice() as number;
+      const formattedPrice = parseFloat(ethers.formatUnits(currentPrice, 18));
+
       setCurrentPrice(formattedPrice);
-      
-      // Calculate and update price change if we have a previous price
-      if (previousPrice !== null) {
-        const change = ((formattedPrice - previousPrice) / previousPrice) * 100;
+
+      if (previousPrice !== 0) {
+        const change = ((formattedPrice - currentPrice) / currentPrice) * 100;
         setPriceChange(change);
       }
 
+      setPreviousPrice(formattedPrice);
       return formattedPrice;
     } catch (error) {
       console.error("Error fetching price:", error);
       return 0;
     }
   };
-  
-  // Function to fetch token balances
+
+  // Fetch balances
   const fetchBalances = async () => {
     try {
-        const provider = new ethers.JsonRpcProvider("https://node-2.seismicdev.net/rpc");
-        const wallet = new ethers.Wallet(VIOLIN_PRIVATE_KEY, provider);
-        const contract = new ethers.Contract(RIFF_AMM_ADDRESS, ABI, wallet);
+      const walletClient = await createShieldedWalletClient({
+        chain: seismicDevnet,
+        transport: http(RPC_URL),
+        account: privateKeyToAccount(VIOLIN_PRIVATE_KEY),
+      });
 
-        const usdcBalanceRaw = await contract.balanceOf(wallet.address); // Fetch USDC balance
+      const riffContract = getShieldedContract({
+        address: RIFF_AMM_ADDRESS as `0x${string}`,
+        client: walletClient,
+        abi: ABI,
+      });
 
-        setUsdcBalance(parseFloat(ethers.formatUnits(usdcBalanceRaw, 18)));
+      const quoteContract = getShieldedContract({
+        address: QUOTE_TOKEN_ADDRESS,
+        client: walletClient,
+        abi: ABI,
+      })
+
+      const riffBalanceRaw = await riffContract.read.getPrice();
+      const usdcBalanceRaw = await quoteContract.read.getPrice();
+
+      setRiffBalance(Number(riffBalanceRaw) / 1e18);
+      setUsdcBalance(Number(usdcBalanceRaw) / 1e18);
     } catch (error) {
-        console.error("Error fetching balances:", error);
+      console.error("Error fetching balances:", error);
     }
   };
 
-  // Add interval to fetch price regularly
-  useEffect(() => {
-    const fetchInitialPrice = async () => {
-      const price = await fetchTokenPrice();
-      setPreviousPrice(price);
-    };
+  // Perform swap
+  const performSwap = async () => {
+    try {
+      const walletClient = await createShieldedWalletClient({
+        chain: seismicDevnet,
+        transport: http(RPC_URL),
+        account: privateKeyToAccount(VIOLIN_PRIVATE_KEY),
+      });
 
-    fetchInitialPrice();
+      const riffContract = getShieldedContract({
+        address: RIFF_AMM_ADDRESS as `0x${string}`,
+        client: walletClient,
+        abi: ABI,
+      });
 
-    // Update price every 10 seconds
-    const interval = setInterval(fetchTokenPrice, 10000);
+      const amount = BigInt(parseFloat(swapAmount) * 1e18);
 
-    return () => clearInterval(interval);
-  }, []);
+      if (isUsdcToRiff) {
+        await riffContract.write.swap([BigInt(0), amount]);
+      } else {
+        await riffContract.write.swap([amount, BigInt(0)]);
+      }
 
+      fetchBalances(); // Refresh balances after swap
+      setSwapAmount(""); // Clear input
+    } catch (error) {
+      console.error("Error performing swap:", error);
+    }
+  };
+
+  // Play music based on price change
   const playMusic = async () => {
-    await Tone.start(); // Ensure AudioContext is running
+    await Tone.start();
 
     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
     const now = Tone.now();
 
-    // Fetch the current price
     const currentPrice = await fetchTokenPrice();
-
-    // Calculate percentage change
     let percentageChange = 0;
+
     if (previousPrice !== null) {
       percentageChange = ((currentPrice - previousPrice) / previousPrice) * 100;
     }
-    setPreviousPrice(currentPrice); // Update the previous price
 
-    // Determine notes based on percentage change
-    let notes: string[];
-    if (percentageChange > 0) {
-      notes = ["D5", "F5", "A5"]; // High-pitched notes for positive change
-    } else if (percentageChange < 0) {
-      notes = ["C4", "E4", "G4"]; // Low-pitched notes for negative change
-    } else {
-      console.log("it prints this")
-      notes = ["C3", "E3", "G3"]; // Neutral notes for no change
-    }
+    const notes = percentageChange > 0 ? ["D5", "F5", "A5"] : ["C3", "E3", "G3"];
+    const duration = Math.min(3, Math.abs(percentageChange) / 10);
 
-    // Adjust duration or intensity based on magnitude of change
-    const duration = Math.min(3, Math.abs(percentageChange) / 10); // Cap duration at 3 seconds
-
-    // Play the notes
     notes.forEach((note, i) => {
       synth.triggerAttack(note, now + i * 0.5);
     });
     synth.triggerRelease(notes, now + duration);
   };
 
+  // Fetch balances and price on mount
+  useEffect(() => {
+    const initializePool = async () => {
+      await addLiquidity();
+      const price = await fetchTokenPrice();
+      setPreviousPrice(price);
+    }
+    
+    initializePool();
+
+    const interval = setInterval(fetchTokenPrice, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="relative">
+    <div>
       <button
         onClick={playMusic}
         className="w-full bg-coffee hover:bg-coyote transition-colors text-isabelline font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md"
@@ -123,6 +228,30 @@ const MusicGenerator: React.FC<MusicGeneratorProps> = ({ setCurrentPrice, setPri
         <Music2 className="w-5 h-5" />
         Listen to the Charts
       </button>
+
+      <div className="space-y-4 mt-6">
+        <input
+          type="text"
+          value={swapAmount}
+          onChange={(e) => setSwapAmount(e.target.value)}
+          placeholder="Enter amount"
+          className="w-full bg-isabelline text-coyote text-2xl font-medium p-4 rounded-xl border border-timberwolf outline-none"
+        />
+
+        <button
+          onClick={() => setIsUsdcToRiff(!isUsdcToRiff)}
+          className="w-full bg-timberwolf text-coffee font-medium py-3 px-4 rounded-xl shadow-md"
+        >
+          {isUsdcToRiff ? "Switch to RIFF to USDC" : "Switch to USDC to RIFF"}
+        </button>
+
+        <button
+          onClick={performSwap}
+          className="w-full bg-coyote hover:bg-coffee transition-colors text-isabelline font-medium py-3 px-4 rounded-xl shadow-md"
+        >
+          {isUsdcToRiff ? "Swap USDC to RIFF" : "Swap RIFF to USDC"}
+        </button>
+      </div>
     </div>
   );
 };
